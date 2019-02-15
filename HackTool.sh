@@ -71,16 +71,23 @@ printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Kernel info\n"
 kernel=$(uname -r)
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Battery info\n"
 batt=$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)
+if [ "$batt" -le "20" ]; then
+  low="Low Battery"
+fi
 battcon=$(system_profiler SPPowerDataType | grep "Condition" | awk '{print $2}')
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Disk info\n"
 dtype="$(diskutil info / |\
                        awk -F': ' '/^\ *Partition Type:/ {printf $2 ", "}')"
 dtype="${dtype//\/ \$}"
 dtype="${dtype%,*}"
-disk="$(system_profiler SPNVMeDataType |\
+nvme="$(system_profiler SPNVMeDataType |\
                        awk -F': ' '/^\ *Model:/ {printf $2 ", "}')"
-disk="${disk//\/ \$}"
-disk="${disk%,*}"
+nvme="${nvme//\/ \$}"
+nvme="${nvme%,*}"
+sata="$(system_profiler SPSerialATADataType |\
+                       awk -F': ' '/^\ *Model:/ {printf $2 ", "}')"
+sata="${sata//\/ \$}"
+sata="${sata%,*}"
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting MacOS version\n"
 OS=$(sw_vers -productVersion)
 if [ $OS == "10.14.0" ] || [ $OS == "10.14.1" ] || [ $OS == "10.14.2" ] || [ $OS == "10.14.3" ] || [ $OS == "10.14.4" ]; then
@@ -91,10 +98,12 @@ fi
 
 while true; do
 
-printf '\033[8;50;75t'
+printf '\033[8;53
+;75t'
 
-version="1.1beta"
+version="1.2-beta"
 printf "${YELLOW}${bold}"
+echo ""
 echo "                 __  __           __  ______            __ "
 echo "                / / / /___ ______/ /_/_  __/___  ____  / / "
 echo "               / /_/ / __ \/ ___/ //_// / / __ \/ __ \/ / "
@@ -118,23 +127,24 @@ printf "${CYAN}${bold}Model Info: ${NC}${normal}"
 echo "$model"
 echo ""
 printf "${CYAN}${bold}Kernel Info: ${NC}${normal}"
-echo "$kernel"
+echo "Darwin $kernel"
 echo ""
 printf "${CYAN}${bold}MacOS Info: ${NC}${normal}"
 echo "MacOS $OS $name"
 echo ""
 printf "${CYAN}${bold}Disk Info: ${NC}${normal}"
-echo "$disk"
-echo "$dtype"
+printf "${LGREEN}${bold}NVME:${NC}${normal} $nvme\n"
+printf "           ${LGREEN}${bold}SATA:${NC}${normal} $sata\n"
+echo "$dtype on / partition"
 echo ""
 printf "${CYAN}${bold}Battery Info: ${NC}${normal}"
-echo "Percentage: $batt%"
+echo "Percentage: $batt% $low"
 echo "              Condition : $battcon"
 echo ""
 echo ""
 printf "${bold}Options:${normal}\n"
 echo "1) Mount / Unmount EFI"
-echo "2) Disable Gatekeeper"
+echo "2) Enable / Disable Gatekeeper"
 echo "r) Force Reboot"
 echo "s) Force Shutdown"
 echo "f) Refresh Info"
@@ -198,14 +208,19 @@ if [ $input = 1 ]; then
 fi
 
 if [ $input = 2 ]; then
-  echo "Disabling GateKeeper..."
-  if [ "$(id -u)" != "0" ] && [ "$(sudo -n echo 'sudo' 2> /dev/null)" != "sudo" ]; then
-      sudo $0 $@
-      exit 0
-  fi
+  echo "1) Enable GateKeeper"
+  echo "2) Disable GateKeeper"
+  read -p "> " in
 
-  sudo spctl --master-disable
-  echo "GateKeeper disabled"
+  if [ $in = "1" ]; then
+    echo "Enabling GateKeeper..."
+    sudo spctl --master-enable
+    echo "GateKeeper enabled"
+  elif [ $in = "2" ]; then
+    echo "Disabling GateKeeper..."
+    sudo spctl --master-disable
+    echo "GateKeeper disabled"
+  fi
 fi
 
 if [ $input = "i" ]; then
@@ -229,7 +244,53 @@ fi
 
 if [ $input = "f" ]; then
    /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-   printf "${GREEN}${bold}[INFO] ${NC}${normal}Refreshed info"
+   printf "${GREEN}${bold}[INFO] ${NC}${normal}Refreshing info\n"
+   printf "${GREEN}${bold}[INFO] ${NC}${normal}This script is running as root\n"
+   printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Model info\n"
+   if [[ "$(kextstat | grep -F -e "FakeSMC" -e "VirtualSMC")" != "" ]]; then
+                   model="Hackintosh ($(sysctl -n hw.model))"
+                   printf "${GREEN}${bold}[INFO] ${NC}${normal}System is a Hackintosh\n"
+                 else
+                   model="$(sysctl -n hw.model)"
+                   printf "${GREEN}${bold}[INFO] ${NC}${normal}System is a real Mac\n"
+                 fi
+   printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting CPU info\n"
+   cpu=$(sysctl -n machdep.cpu.brand_string)
+   printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting GPU info\n"
+   gpu="$(system_profiler SPDisplaysDataType |\
+                          awk -F': ' '/^\ *Chipset Model:/ {printf $2 ", "}')"
+   gpu="${gpu//\/ \$}"
+   gpu="${gpu%,*}"
+   printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting RAM info\n"
+   ram="$(system_profiler SPHardwareDataType |\
+                          awk -F': ' '/^\ *Memory:/ {printf $2 ", "}')"
+   ram="${ram//\/ \$}"
+   ram="${ram%,*}"
+   printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Kernel info\n"
+   kernel=$(uname -r)
+   printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Battery info\n"
+   batt=$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)
+   battcon=$(system_profiler SPPowerDataType | grep "Condition" | awk '{print $2}')
+   printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Disk info\n"
+   dtype="$(diskutil info / |\
+                          awk -F': ' '/^\ *Partition Type:/ {printf $2 ", "}')"
+   dtype="${dtype//\/ \$}"
+   dtype="${dtype%,*}"
+   nvme="$(system_profiler SPNVMeDataType |\
+                          awk -F': ' '/^\ *Model:/ {printf $2 ", "}')"
+   nvme="${nvme//\/ \$}"
+   nvme="${nvme%,*}"
+   sata="$(system_profiler SPSerialATADataType |\
+                          awk -F': ' '/^\ *Model:/ {printf $2 ", "}')"
+   sata="${sata//\/ \$}"
+   sata="${sata%,*}"
+   printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting MacOS version\n"
+   OS=$(sw_vers -productVersion)
+   if [ $OS == "10.14.0" ] || [ $OS == "10.14.1" ] || [ $OS == "10.14.2" ] || [ $OS == "10.14.3" ] || [ $OS == "10.14.4" ]; then
+     name="(Mojave)"
+   else
+     name=""
+   fi
    echo ""
 fi
 
