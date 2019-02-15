@@ -70,7 +70,7 @@ ram="${ram%,*}"
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Kernel info\n"
 kernel=$(uname -r)
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Battery info\n"
-batt=$(ioreg -l | awk '$3~/Capacity/{c[$3]=$5}END{OFMT="%.3f";max=c["\"MaxCapacity\""];print(max>0?100*c["\"CurrentCapacity\""]/max:"?")}')
+batt=$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)
 battcon=$(system_profiler SPPowerDataType | grep "Condition" | awk '{print $2}')
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Disk info\n"
 dtype="$(diskutil info / |\
@@ -93,15 +93,17 @@ while true; do
 
 printf '\033[8;50;75t'
 
-version="1.0beta"
+version="1.1beta"
 printf "${YELLOW}${bold}"
 echo "                 __  __           __  ______            __ "
 echo "                / / / /___ ______/ /_/_  __/___  ____  / / "
 echo "               / /_/ / __ \/ ___/ //_// / / __ \/ __ \/ / "
 echo "              / __  / /_/ / /__/ ,<  / / / /_/ / /_/ / / "
 echo "             /_/ /_/\__,_/\___/_/|_|/_/  \____/\____/_/ "
-echo "                                            v$version"
+echo "                                           v$version"
+echo ""
 echo "                            Ryan Wong 2019"
+echo ""
 echo ""
 printf "${CYAN}${bold}CPU Info: ${NC}${normal}"
 echo "$cpu"
@@ -130,8 +132,8 @@ echo "Percentage: $batt%"
 echo "              Condition : $battcon"
 echo ""
 echo ""
-printf "${bold}Options${normal}\n"
-echo "1) Mount EFI"
+printf "${bold}Options:${normal}\n"
+echo "1) Mount / Unmount EFI"
 echo "2) Disable Gatekeeper"
 echo "r) Force Reboot"
 echo "s) Force Shutdown"
@@ -147,102 +149,52 @@ if [ $input = "" ]; then
 fi
 
 if [ $input = 1 ]; then
-  echo "Mounting EFI..."
-  if [ "$(id -u)" != "0" ]; then
-      if [ "$(sudo -n echo 'sudo' 2> /dev/null)" != "sudo" ]; then
-        echo "Run as root"
-      fi
-      sudo $0 $@
-      exit 0
-  fi
+  echo "1) Mount EFI"
+  echo "2) Unmount EFI"
+  echo ""
+  read -p "> " answe
 
-  # Note: Based on CloverPackage MountESP script.
+  if [ $answe = 1 ]; then
+    diskutil list | grep EFI
+    echo ""
+    echo "disk0s1 is from internal disk"
+    echo "disk1s1 is from external disk"
+    echo ""
+    echo "Type the disk identifier you want to mount."
+    echo ""
+    read -p "> " answer
 
-  if [[ "$1" == "" ]]; then
-      DestVolume=/
-  else
-      DestVolume="$1"
-  fi
-
-  # find whole disk for the destination volume
-  DiskDevice=$(LC_ALL=C diskutil info "$DestVolume" 2>/dev/null | sed -n 's/.*Part [oO]f Whole: *//p')
-  if [[ -z "$DiskDevice" ]]; then
-      echo "Error: Not able to find volume with the name \"$DestVolume\""
-      exit 1
-  fi
-
-  # check if target volume is a logical Volume instead of physical
-  if [[ "$(echo $(LC_ALL=C diskutil list | grep -i 'Logical Volume' | awk '{print tolower($0)}'))" == *"logical volume"* ]]; then
-      # ok, we have a logical volume somewhere.. so that can assume that we can use "diskutil cs"
-      LC_ALL=C diskutil cs info $DiskDevice > /dev/null 2>&1
-      if [[ $? -eq 0 ]] ; then
-          # logical volumes does not have an EFI partition (or not suitable for us?)
-          # find the partition uuid
-          UUID=$(LC_ALL=C diskutil info "${DiskDevice}" 2>/dev/null | sed -n 's/.*artition UUID: *//p')
-          # with the partition uuid we can find the real disk in in diskutil list output
-          if [[ -n "$UUID" ]]; then
-              realDisk=$(LC_ALL=C diskutil list | grep -B 1 "$UUID" | grep -i 'logical volume' | awk '{print $4}' | sed -e 's/,//g' | sed -e 's/ //g')
-              if [[ -n "$realDisk" ]]; then
-                  DiskDevice=$(LC_ALL=C diskutil info "${realDisk}" 2>/dev/null | sed -n 's/.*Part [oO]f Whole: *//p')
-              fi
-          fi
+      if [ $answer = "disk0s1" ]; then
+        echo "Mounting EFI from internal disk..."
+        mkdir "/Volumes/efi(internal)"
+        sudo mount -t msdos /dev/disk0s1 "/Volumes/efi(internal)"
+        open "/Volumes/efi(internal)"
+      elif [ $answer = "disk1s1" ]; then
+        echo "Mounting EFI from external disk..."
+        mkdir "/Volumes/efi(external)"
+        sudo mount -t msdos /dev/disk1s1 "/Volumes/efi(external)"
+        open "/Volumes/efi(external)"
       fi
   fi
 
-  # check if target volume is APFS, and therefore part of an APFS container
-  if [[ "$(echo $(LC_ALL=C diskutil list "$DiskDevice" | grep -i 'APFS Container Scheme' | awk '{print tolower($0)}'))" == *"apfs container scheme"* ]]; then
-      # ok, this disk is an APFS partition, extract physical store device
-      realDisk=$(LC_ALL=C diskutil list "$DiskDevice" 2>/dev/null | sed -n 's/.*Physical Store *//p')
-      DiskDevice=$(LC_ALL=C diskutil info "$realDisk" 2>/dev/null | sed -n 's/.*Part [oO]f Whole: *//p')
-  fi
+  if [ $answe = 2 ]; then
+    diskutil list | grep EFI
+    echo ""
+    echo "disk0s1 is from internal disk"
+    echo "disk1s1 is from external disk"
+    echo ""
+    echo "Type the disk identifier you want to unmount."
+    echo ""
+    read -p "> " answers
 
-  PartitionScheme=$(LC_ALL=C diskutil info "$DiskDevice" 2>/dev/null | sed -nE 's/.*(Partition Type|Content \(IOContent\)): *//p')
-  # Check if the disk is an MBR disk
-  if [[ "$PartitionScheme" == "FDisk_partition_scheme" ]]; then
-      echo "Error: Volume \"$DestVolume\" is part of an MBR disk"
-      exit 1
+    if [ $answers = "disk0s1" ]; then
+      echo "Unmounting EFI from internal disk..."
+      diskutil unmount /dev/disk0s1
+    elif [ $answers = "disk1s1" ]; then
+      echo "Unmounting EFI from external disk..."
+      diskutil unmount /dev/disk1s1
+    fi
   fi
-  # Check if not GPT
-  if [[ "$PartitionScheme" != "GUID_partition_scheme" ]]; then
-      echo "Error: Volume \"$DestVolume\" is not on GPT disk or APFS container"
-      exit 1
-  fi
-
-  # Find the associated EFI partition on DiskDevice
-  diskutil list -plist "/dev/$DiskDevice" 2>/dev/null >/tmp/org_rehabman_diskutil.plist
-  for ((part=0; 1; part++)); do
-      content=`/usr/libexec/PlistBuddy -c "Print :AllDisksAndPartitions:0:Partitions:$part:Content" /tmp/org_rehabman_diskutil.plist 2>&1`
-      if [[ "$content" == *"Does Not Exist"* ]]; then
-          echo "Error: cannot locate EFI partition for $DestVolume"
-          exit 1
-      fi
-      if [[ "$content" == "EFI" ]]; then
-          EFIDevice=`/usr/libexec/PlistBuddy -c "Print :AllDisksAndPartitions:0:Partitions:$part:DeviceIdentifier" /tmp/org_rehabman_diskutil.plist 2>&1`
-          break
-      fi
-  done
-  rm /tmp/org_rehabman_diskutil.plist
-
-  # should not happen
-  if [[ -z "$EFIDevice" ]]; then
-      echo "Error: unable to determine EFIDevice from $DiskDevice"
-      exit 1
-  fi
-
-  # Get the EFI mount point if the partition is currently mounted
-  code=0
-  EFIMountPoint=$(LC_ALL=C diskutil info "$EFIDevice" 2>/dev/null | sed -n 's/.*Mount Point: *//p')
-  if [[ -z "$EFIMountPoint" ]]; then
-      # try to mount the EFI partition
-      EFIMountPoint="/Volumes/EFI"
-      [ ! -d "$EFIMountPoint" ] && mkdir -p "$EFIMountPoint"
-      diskutil mount -mountPoint "$EFIMountPoint" /dev/$EFIDevice >/dev/null 2>&1
-      code=$?
-  fi
-  echo "${EFIMountPoint// /\\ }"
-  exit $code
-
-open /Volumes/EFI
 fi
 
 if [ $input = 2 ]; then
@@ -253,7 +205,7 @@ if [ $input = 2 ]; then
   fi
 
   sudo spctl --master-disable
-  echo 'GateKeeper disabled'
+  echo "GateKeeper disabled"
 fi
 
 if [ $input = "i" ]; then
@@ -262,7 +214,7 @@ if [ $input = "i" ]; then
 fi
 
 if [ $input = "r" ]; then
-  echo "Are you sure you want to Force Restart? (Any unsaved progress will be gone) (y/n)"
+  echo "Are you sure you want to Force Restart? (Any unsaved progress will be lost) (y/n)"
   read	-p "> " ans
 
   if [ $ans = "y" ]; then
@@ -282,7 +234,7 @@ if [ $input = "f" ]; then
 fi
 
 if [ $input = "s" ]; then
-  echo "Are you sure you want to Force Shutdown? (Any unsaved progress will be gone) (y/n)"
+  echo "Are you sure you want to Force Shutdown? (Any unsaved progress will be lost) (y/n)"
   read	-p "> " answ
 
   if [ $answ = "y" ]; then
