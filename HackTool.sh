@@ -74,6 +74,9 @@ batt=$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)
 if [ "$batt" -le "20" ]; then
   low="Low Battery"
 fi
+if [ "$batt" -e "100" ]; then
+  full="Fully Charged"
+fi
 battcon=$(system_profiler SPPowerDataType | grep "Condition" | awk '{print $2}')
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Disk info\n"
 dtype="$(diskutil info / |\
@@ -98,10 +101,9 @@ fi
 
 while true; do
 
-printf '\033[8;53
-;75t'
+printf '\033[8;53;75t'
 
-version="1.2-beta"
+version="1.3-beta"
 printf "${YELLOW}${bold}"
 echo ""
 echo "                 __  __           __  ______            __ "
@@ -138,13 +140,16 @@ printf "           ${LGREEN}${bold}SATA:${NC}${normal} $sata\n"
 echo "$dtype on / partition"
 echo ""
 printf "${CYAN}${bold}Battery Info: ${NC}${normal}"
-echo "Percentage: $batt% $low"
+echo "Percentage: $batt%"
+printf "${RED}${bold}              $low ${NC}${normal}\n"
+printf "${GREEN}${bold}              $full ${NC}${normal}\n"
 echo "              Condition : $battcon"
 echo ""
 echo ""
 printf "${bold}Options:${normal}\n"
 echo "1) Mount / Unmount EFI"
 echo "2) Enable / Disable Gatekeeper"
+echo "3) Tweaks for macOS"
 echo "r) Force Reboot"
 echo "s) Force Shutdown"
 echo "f) Refresh Info"
@@ -221,6 +226,11 @@ if [ $input = 2 ]; then
     sudo spctl --master-disable
     echo "GateKeeper disabled"
   fi
+fi
+
+if [ $input = 3 ]; then
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  /bin/bash tweaks.sh
 fi
 
 if [ $input = "i" ]; then
@@ -309,6 +319,7 @@ fi
 
 if [ $input = "q" ]; then
   echo "Goodbye!"
+  false
   exit 0
 fi
 
