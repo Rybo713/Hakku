@@ -73,9 +73,10 @@ printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Battery info\n"
 batt=$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)
 if [ "$batt" -le "20" ]; then
   low="Low Battery"
-fi
-if [ "$batt" -e "100" ]; then
+elif [ "$batt" -ge "100" ]; then
   full="Fully Charged"
+else
+  printf ""
 fi
 battcon=$(system_profiler SPPowerDataType | grep "Condition" | awk '{print $2}')
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Disk info\n"
@@ -101,9 +102,9 @@ fi
 
 while true; do
 
-printf '\033[8;53;75t'
+printf '\033[8;55;75t'
 
-version="1.3-beta"
+version="1.4-beta"
 printf "${YELLOW}${bold}"
 echo ""
 echo "                 __  __           __  ______            __ "
@@ -150,9 +151,11 @@ printf "${bold}Options:${normal}\n"
 echo "1) Mount / Unmount EFI"
 echo "2) Enable / Disable Gatekeeper"
 echo "3) Tweaks for macOS"
+echo "4) Disable Hibernation"
 echo "r) Force Reboot"
 echo "s) Force Shutdown"
 echo "f) Refresh Info"
+echo "t) Settings"
 echo "i) Info"
 echo "q) Exit"
 echo	""
@@ -231,6 +234,18 @@ fi
 if [ $input = 3 ]; then
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   /bin/bash tweaks.sh
+fi
+
+if [ $input = 4 ]; then
+  echo "Disabling Hibernation"
+  echo ""
+  sudo pmset -a hibernatemode 0
+  sudo rm /var/vm/sleepimage
+  sudo mkdir /var/vm/sleepimage
+  sudo pmset -a standby 0
+  sudo pmset -a autopoweroff 0
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}Disabled Hibernation\n"
 fi
 
 if [ $input = "i" ]; then
@@ -315,6 +330,42 @@ if [ $input = "s" ]; then
   else
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   fi
+fi
+
+if [ $input = "t" ]; then
+  echo ""
+  printf "${bold}Settings${normal}"
+  echo ""
+  echo ""
+  echo "1) VoiceOver"
+  echo "b) Back"
+  echo ""
+  read -p "> " ii
+
+  if [ $ii = 1 ]; then
+    echo ""
+    echo "1) Enable VoiceOver"
+    echo "2) Disable VoiceOver"
+    echo "b) Back"
+    echo ""
+    read -p "> " iii
+
+      if [ $iii = 1 ]; then
+        source tweaks.sh
+        $vo="1"
+        /bin/bash HackTool.sh
+      elif [ $iii = 2 ]; then
+        source tweaks.sh
+        $vo="2"
+        /bin/bash HackTool.sh
+      elif [ $iii = "b" ]; then
+        /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+      fi
+
+  elif [ $ii = "b" ]; then
+    /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  fi
+
 fi
 
 if [ $input = "q" ]; then

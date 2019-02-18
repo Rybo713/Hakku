@@ -37,9 +37,11 @@ LYELLOW='\033[1;33m'
 bold=$(tput bold)
 normal=$(tput sgr0)
 
+vo="0"
+
 /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
 
-version="1.3-beta"
+version="1.4-beta"
 printf "${YELLOW}${bold}"
 echo ""
 echo "                 __  __           __  ______            __ "
@@ -57,7 +59,11 @@ printf "${RED}${normal}               I am not responsible for any damage that\n
 printf "${RED}${normal}                 may be caused by using these tweaks\n"
 printf "${RED}${bold}             --------------------------------------------\n"
 printf "${NC}${normal}                        1) I agree    2) Exit\n"
-say "Warning! I am not responsible for any damage that may be caused by using these tweaks."
+if [ $vo = "1" ]; then
+ say "Warning! I am not responsible for any damage that may be caused by using these tweaks."
+elif [ $vo = "2" ]; then
+  echo ""
+fi
 
 read -p "> " ioo
 
