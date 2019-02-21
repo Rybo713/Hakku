@@ -37,6 +37,8 @@ LYELLOW='\033[1;33m'
 bold=$(tput bold)
 normal=$(tput sgr0)
 
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking if script is running as root\n"
+
 if [[ $EUID -ne 0 ]]; then
   printf "${RED}${bold}[ERROR] ${NC}${normal}This script must be run as root\n"
   exit 1
@@ -46,6 +48,7 @@ fi
 
 /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
 
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking if script is running as root\n"
 printf "${GREEN}${bold}[INFO] ${NC}${normal}This script is running as root\n"
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Model info\n"
 if [[ "$(kextstat | grep -F -e "FakeSMC" -e "VirtualSMC")" != "" ]]; then
@@ -100,12 +103,31 @@ else
   name=""
 fi
 
+check=0
+check1=0
+
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking for Settings Extension\n"
+if [ -e settings.sh ]; then
+   printf "${GREEN}${bold}[INFO] ${NC}${normal}Found Settings Extension\n"
+else
+  check=1
+  printf "${RED}${bold}[ERROR] ${NC}${normal}Failed to find Settings Extension\n"
+fi
+
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking for Tweaks Extension\n"
+if [ -e tweaks.sh ]; then
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}Found Tweaks Extension\n"
+else
+  check1=1
+  printf "${RED}${bold}[ERROR] ${NC}${normal}Failed to find Tweaks Extension\n"
+fi
+
 while true; do
 
-printf '\033[8;57;75t'
+printf '\033[8;63;75t'
 
-version="1.5-beta"
-printf "${YELLOW}${bold}"
+version="1.6-beta"
+printf "$color"
 echo ""
 echo "                 __  __           __  ______            __ "
 echo "                / / / /___ ______/ /_/_  __/___  ____  / / "
@@ -150,13 +172,21 @@ echo ""
 printf "${bold}Options:${normal}\n"
 echo "1) Mount / Unmount EFI"
 echo "2) Enable / Disable Gatekeeper"
-echo "3) Tweaks for macOS"
+if [ $check1 = 0 ]; then
+  printf "3) Tweaks for macOS\n"
+else
+  printf "3)${RED}${bold} Tweaks for macOS${NC}${normal}\n"
+fi
 echo "4) Disable Hibernation"
 echo "5) Delete iMessage related files/folders (Use with extra caution!)"
 echo "r) Force Reboot"
 echo "s) Force Shutdown"
 echo "f) Refresh Info"
-echo "t) Settings"
+if [ $check = 0 ]; then
+  printf "t) Settings\n"
+else
+  printf "t)${RED}${bold} Settings${NC}${normal}\n"
+fi
 echo "i) Info"
 echo "q) Exit"
 echo	""
@@ -167,7 +197,7 @@ if [ $input = "" ]; then
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
 fi
 
-if [ $input = 0 ]; then
+if [ $input = 5 ]; then
   echo "Deleting iMessage related files/folders..."
   cd ~/Library/Caches/
   rm -R com.apple.Messages*
@@ -250,7 +280,7 @@ fi
 
 if [ $input = 3 ]; then
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-  /bin/bash tweaks.sh
+  . ./tweaks.sh
 fi
 
 if [ $input = 4 ]; then
@@ -333,6 +363,24 @@ if [ $input = "f" ]; then
    else
      name=""
    fi
+   check=0
+   check1=0
+
+   printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking for Settings Extension\n"
+   if [ -e settings.sh ]; then
+      printf "${GREEN}${bold}[INFO] ${NC}${normal}Found Settings Extension\n"
+   else
+     check=1
+     printf "${RED}${bold}[ERROR] ${NC}${normal}Failed to find Settings Extension\n"
+   fi
+
+   printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking for Tweaks Extension\n"
+   if [ -e tweaks.sh ]; then
+     printf "${GREEN}${bold}[INFO] ${NC}${normal}Found Tweaks Extension\n"
+   else
+     check1=1
+     printf "${RED}${bold}[ERROR] ${NC}${normal}Failed to find Tweaks Extension\n"
+   fi
    echo ""
 fi
 
@@ -350,39 +398,8 @@ if [ $input = "s" ]; then
 fi
 
 if [ $input = "t" ]; then
-  echo ""
-  printf "${bold}Settings${normal}"
-  echo ""
-  echo ""
-  echo "1) VoiceOver"
-  echo "b) Back"
-  echo ""
-  read -p "> " ii
-
-  if [ $ii = 1 ]; then
-    echo ""
-    echo "1) Enable VoiceOver"
-    echo "2) Disable VoiceOver"
-    echo "b) Back"
-    echo ""
-    read -p "> " iii
-
-      if [ $iii = 1 ]; then
-        source tweaks.sh
-        $vo="1"
-        /bin/bash HackTool.sh
-      elif [ $iii = 2 ]; then
-        source tweaks.sh
-        $vo="2"
-        /bin/bash HackTool.sh
-      elif [ $iii = "b" ]; then
-        /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-      fi
-
-  elif [ $ii = "b" ]; then
-    /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-  fi
-
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  . ./settings.sh
 fi
 
 if [ $input = "q" ] || [ $input = "exit" ]; then
