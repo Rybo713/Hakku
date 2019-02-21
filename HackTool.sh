@@ -102,9 +102,9 @@ fi
 
 while true; do
 
-printf '\033[8;55;75t'
+printf '\033[8;57;75t'
 
-version="1.4-beta"
+version="1.5-beta"
 printf "${YELLOW}${bold}"
 echo ""
 echo "                 __  __           __  ______            __ "
@@ -152,6 +152,7 @@ echo "1) Mount / Unmount EFI"
 echo "2) Enable / Disable Gatekeeper"
 echo "3) Tweaks for macOS"
 echo "4) Disable Hibernation"
+echo "5) Delete iMessage related files/folders (Use with extra caution!)"
 echo "r) Force Reboot"
 echo "s) Force Shutdown"
 echo "f) Refresh Info"
@@ -164,6 +165,22 @@ read	-p "> " input
 
 if [ $input = "" ]; then
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+fi
+
+if [ $input = 0 ]; then
+  echo "Deleting iMessage related files/folders..."
+  cd ~/Library/Caches/
+  rm -R com.apple.Messages*
+  rm -R com.apple.imfoundation*
+  cd ~/Library/Preferences/
+  rm com.apple.iChat*
+  rm com.apple.imagent*
+  rm com.apple.imessage*
+  rm com.apple.imservice*
+  rm -R ~/Library/Messages/
+  echo "Done, Reboot"
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}Deleted iMessage related files/folders, Please Reboot\n"
 fi
 
 if [ $input = 1 ]; then
@@ -368,7 +385,7 @@ if [ $input = "t" ]; then
 
 fi
 
-if [ $input = "q" ]; then
+if [ $input = "q" ] || [ $input = "exit" ]; then
   echo "Goodbye!"
   false
   exit 0
