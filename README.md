@@ -1,14 +1,14 @@
 # HackTool
-A command line utility which shows the user their system info and tools to make it easier to mount EFI and disable GateKeeper.
+A command line utility which shows the user their system info and a bunch of useful tools.
 
 <img src="https://i.imgur.com/SUDUa2r.png" alt="HackTool" align="left" height="520px">
 
-## Instructions 
+## Instructions
 
   1) Go to Releases and download the latest version.
   2) Open terminal and type in `sudo chmod +x "location of HackTool"`
   3) Run script using `sudo "location of HackTool"`
-  
+
   #### For Tweaks Extension:
   1) Go to Releases and download the latest version.
   2) Put both HackTool and Tweaks into the same folder.
