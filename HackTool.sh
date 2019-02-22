@@ -119,7 +119,7 @@ fi
 battcon=$(system_profiler SPPowerDataType | grep "Condition" | awk '{print $2}')
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Disk info\n"
 dtype="$(diskutil info / |\
-                       awk -F': ' '/^\ *Partition Type:/ {printf $2 ", "}')"
+                       awk -F': ' '/^\ *File System Personality:/ {printf $2 ", "}')"
 dtype="${dtype//\/ \$}"
 dtype="${dtype%,*}"
 nvme="$(system_profiler SPNVMeDataType |\
@@ -134,6 +134,10 @@ printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting MacOS version\n"
 OS=$(sw_vers -productVersion)
 if [ $OS == "10.14.0" ] || [ $OS == "10.14.1" ] || [ $OS == "10.14.2" ] || [ $OS == "10.14.3" ] || [ $OS == "10.14.4" ]; then
   name="(Mojave)"
+elif [ $OS == "10.13.0" ] || [ $OS == "10.13.1" ] || [ $OS == "10.13.2" ] || [ $OS == "10.13.3" ] || [ $OS == "10.13.4" ] || [ $OS == "10.13.5" ] || [ $OS == "10.13.6" ]; then
+  name="(High Sierra)"
+elif [ $OS == "10.12.0" ] || [ $OS == "10.12.1" ] || [ $OS == "10.12.2" ] || [ $OS == "10.12.3" ] || [ $OS == "10.12.4" ] || [ $OS == "10.12.5" ] || [ $OS == "10.12.6" ]; then
+  name="(Sierra)"
 else
   name=""
 fi
@@ -161,7 +165,7 @@ while true; do
 
 printf '\033[8;70;75t'
 
-version="v1.7.2-beta"
+version="v1.7.3-beta"
 printf "$color"
 echo ""
 echo "                 __  __           __  ______            __ "
@@ -342,7 +346,7 @@ fi
 
 if [ $input = "i" ]; then
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}HackTool v$version by Ryan Wong\n"
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}HackTool $version by Ryan Wong\n"
 fi
 
 if [ $input = "r" ]; then
@@ -453,7 +457,7 @@ if [ $input = 6 ]; then
   update="$(curl --silent "https://api.github.com/repos/Rybo713/HackTool/tags" | jq -r '.[0].name')"
   echo ""
 
-  if [ $update = "v1.7.2-beta" ]; then
+  if [ $update = "v1.7.3-beta" ]; then
     echo "No new updates"
   else
     echo "New updates found: ${update}"
