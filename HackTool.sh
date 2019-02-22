@@ -153,7 +153,7 @@ while true; do
 
 printf '\033[8;70;75t'
 
-version="v1.7-beta"
+version="v1.7.1-beta"
 printf "$color"
 echo ""
 echo "                 __  __           __  ______            __ "
@@ -440,11 +440,12 @@ if [ $input = "t" ]; then
 fi
 
 if [ $input = 6 ]; then
-  update="$(curl --silent "https://api.github.com/repos/Rybo713/HackTool/tags" | jq -r '.[0].name')"
   echo ""
   echo "Checking for updates..."
+  update="$(curl --silent "https://api.github.com/repos/Rybo713/HackTool/tags" | jq -r '.[0].name')"
+  echo ""
 
-  if [ $update = "v1.7-beta" ]; then
+  if [ $update = "v1.7.1-beta" ]; then
     echo "No new updates"
   else
     echo "New updates found: ${update}"
@@ -531,13 +532,13 @@ fi
 if [ $input = 7 ]; then
   echo ""
   echo "Downloading HackTool $update..."
-#  wget --no-check-certificate --content-disposition https://github.com/Rybo713/HackTool/tarball/$update
-  curl -OL https://github.com/Rybo713/HackTool/tarball/$update
+  wget --no-check-certificate --content-disposition https://github.com/Rybo713/HackTool/tarball/$update
+  curl -LJO https://github.com/Rybo713/HackTool/tarball/$update
   echo "Extracting files"
   tar xvzf *.tar.gz && rm *.tar.gz
-  echo "Installing HackTool $update..."
-  mv ~/
-  echo "Installation complete, please restart script"
+  echo ""
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}To install move contents from the new folder to the old folder.\n"
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}After restart script\n"
   echo ""
   echo "r) Restart"
   echo ""
