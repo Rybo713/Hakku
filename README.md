@@ -1,5 +1,5 @@
 # HackTool
-A command line utility which shows the user their system info and a bunch of useful tools.
+A command line utility which shows the user their system info and a bunch of useful tools and tweaks.
 
 <img src="https://i.imgur.com/SUDUa2r.png" alt="HackTool" align="left" height="520px">
 
