@@ -57,7 +57,7 @@ command -v brew > /dev/null ; then
   printf "${GREEN}${bold}[INFO] ${NC}${normal}HomeBrew package is installed\n"
 else
   printf "${RED}${bold}[ERROR] ${NC}${normal}HomeBrew package is not installed\n"
-  echo "Install HomeBrew with ''"
+  echo "Install HomeBrew with '/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'"
   exit 0
 fi
 
@@ -66,6 +66,14 @@ if command -v jq > /dev/null ; then
 else
   printf "${RED}${bold}[ERROR] ${NC}${normal}jq package is not installed\n"
   echo "Install jq with 'brew install jq'"
+  exit 0
+fi
+
+if command -v wget > /dev/null ; then
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}wget package is installed\n"
+else
+  printf "${RED}${bold}[ERROR] ${NC}${normal}wget package is not installed\n"
+  echo "Install wget with 'brew install wget'"
   exit 0
 fi
 
@@ -153,7 +161,7 @@ while true; do
 
 printf '\033[8;70;75t'
 
-version="v1.7.1-beta"
+version="v1.7.2-beta"
 printf "$color"
 echo ""
 echo "                 __  __           __  ______            __ "
@@ -445,7 +453,7 @@ if [ $input = 6 ]; then
   update="$(curl --silent "https://api.github.com/repos/Rybo713/HackTool/tags" | jq -r '.[0].name')"
   echo ""
 
-  if [ $update = "v1.7.1-beta" ]; then
+  if [ $update = "v1.7.2-beta" ]; then
     echo "No new updates"
   else
     echo "New updates found: ${update}"
