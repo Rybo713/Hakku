@@ -57,7 +57,6 @@ command -v brew > /dev/null ; then
   printf "${GREEN}${bold}[INFO] ${NC}${normal}HomeBrew package is installed\n"
 else
   printf "${RED}${bold}[ERROR] ${NC}${normal}HomeBrew package is not installed\n"
-  echo "Install HomeBrew with '/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"'"
   exit 0
 fi
 
