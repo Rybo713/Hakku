@@ -466,6 +466,69 @@ option2(){
   read -p "> " inputo2
 }
 
+option2a(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "${YELLOW}${bold}"
+  echo "                                                                       v$version"
+  echo ""
+  echo "                     __  __           __  ______            __ "
+  echo "                    / / / /___ ______/ /_/_  __/___  ____  / / "
+  echo "                   / /_/ / __ \/ ___/ //_// / / __ \/ __ \/ / "
+  echo "                  / __  / /_/ / /__/ ,<  / / / /_/ / /_/ / / "
+  echo "                 /_/ /_/\__,_/\___/_/|_|/_/  \____/\____/_/ "
+  echo ""
+  echo ""
+  printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo ""
+  echo "                                Enabling GateKeeper"
+  echo "                                -------------------"
+  echo ""
+  sudo spctl --master-enable
+  echo "                                GateKeeper enabled"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " inputo2a
+}
+
+option2b(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "${YELLOW}${bold}"
+  echo "                                                                       v$version"
+  echo ""
+  echo "                     __  __           __  ______            __ "
+  echo "                    / / / /___ ______/ /_/_  __/___  ____  / / "
+  echo "                   / /_/ / __ \/ ___/ //_// / / __ \/ __ \/ / "
+  echo "                  / __  / /_/ / /__/ ,<  / / / /_/ / /_/ / / "
+  echo "                 /_/ /_/\__,_/\___/_/|_|/_/  \____/\____/_/ "
+  echo ""
+  echo ""
+  printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo ""
+  echo "                                Disable GateKeeper"
+  echo "                                ------------------"
+  echo ""
+  sudo spctl --master-disable
+  echo "                                GateKeeper disabled"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " inputo2b
+}
+
+
 option3(){
   echo ""
 }
@@ -547,7 +610,7 @@ fi
 
 printf '\033[8;24;80t'
 
-version="2.0-beta"
+version="2.0alpha"
 printf "${YELLOW}${bold}"
 echo "                                                                       v$version"
 echo ""
@@ -634,6 +697,7 @@ fi
 
     if [ $input5 = "q" ]; then
       refresh
+
     elif [ $input5 = 1 ]; then
       option1
         if [ $inputo1 = 1 ]; then
@@ -666,11 +730,27 @@ fi
           elif [ $inputo1b = "q" ]; then
             option1b
           fi
-        elif [ $inputo1 = "q" ]; then
+      elif [ $inputo1 = "q" ]; then
           options
-        fi
+      fi
+
     elif [ $input5 = 2 ]; then
       option2
+
+      if [ $inputo2 = 1 ]; then
+        option2a
+           if [ $inputo2a = "q" ]; then
+             options
+            fi
+      elif [ $inputo2 = 2 ]; then
+        option2b
+            if [ $inputo2b = "q" ]; then
+              options
+            fi
+      elif [ $inputo2 = "q" ]; then
+        options
+      fi
+
     elif [ $input5 = 3 ]; then
       option3
     elif [ $input5 = 4 ]; then
