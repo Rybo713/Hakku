@@ -50,6 +50,33 @@ fi
 
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking if script is running as root\n"
 printf "${GREEN}${bold}[INFO] ${NC}${normal}This script is running as root\n"
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking system if it meets requirements\n"
+
+if
+command -v brew > /dev/null ; then
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}HomeBrew package is installed\n"
+else
+  printf "${RED}${bold}[ERROR] ${NC}${normal}HomeBrew package is not installed\n"
+  echo "Install HomeBrew with ''"
+  exit 0
+fi
+
+if command -v jq > /dev/null ; then
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}jq package is installed\n"
+else
+  printf "${RED}${bold}[ERROR] ${NC}${normal}jq package is not installed\n"
+  echo "Install jq with 'brew install jq'"
+  exit 0
+fi
+
+if command -v curl > /dev/null ; then
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}curl package is installed\n"
+else
+  printf "${RED}${bold}[ERROR] ${NC}${normal}curl package is not installed\n"
+  echo "Curl should be installed with macOS"
+  exit 0
+fi
+
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Model info\n"
 if [[ "$(kextstat | grep -F -e "FakeSMC" -e "VirtualSMC")" != "" ]]; then
                 model="Hackintosh ($(sysctl -n hw.model))"
@@ -124,9 +151,9 @@ fi
 
 while true; do
 
-printf '\033[8;63;75t'
+printf '\033[8;70;75t'
 
-version="1.6-beta"
+version="v1.7-beta"
 printf "$color"
 echo ""
 echo "                 __  __           __  ______            __ "
@@ -134,7 +161,7 @@ echo "                / / / /___ ______/ /_/_  __/___  ____  / / "
 echo "               / /_/ / __ \/ ___/ //_// / / __ \/ __ \/ / "
 echo "              / __  / /_/ / /__/ ,<  / / / /_/ / /_/ / / "
 echo "             /_/ /_/\__,_/\___/_/|_|/_/  \____/\____/_/ "
-echo "                                           v$version"
+echo "                                           $version"
 echo ""
 echo "                            Ryan Wong 2019"
 echo ""
@@ -179,6 +206,8 @@ else
 fi
 echo "4) Disable Hibernation"
 echo "5) Delete iMessage related files/folders (Use with extra caution!)"
+printf "6) Check for updates $noti\n"
+printf "$seven\n"
 echo "r) Force Reboot"
 echo "s) Force Shutdown"
 echo "f) Refresh Info"
@@ -216,6 +245,7 @@ fi
 if [ $input = 1 ]; then
   echo "1) Mount EFI"
   echo "2) Unmount EFI"
+  echo "b) Back"
   echo ""
   read -p "> " answe
 
@@ -260,11 +290,16 @@ if [ $input = 1 ]; then
       diskutil unmount /dev/disk1s1
     fi
   fi
+
+  if [ $answe = "b" ]; then
+    /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  fi
 fi
 
 if [ $input = 2 ]; then
   echo "1) Enable GateKeeper"
   echo "2) Disable GateKeeper"
+  echo "b) Back"
   read -p "> " in
 
   if [ $in = "1" ]; then
@@ -275,6 +310,8 @@ if [ $input = 2 ]; then
     echo "Disabling GateKeeper..."
     sudo spctl --master-disable
     echo "GateKeeper disabled"
+  elif [ $in = "b" ]; then
+    /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   fi
 fi
 
@@ -400,6 +437,117 @@ fi
 if [ $input = "t" ]; then
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   . ./settings.sh
+fi
+
+if [ $input = 6 ]; then
+  update="$(curl --silent "https://api.github.com/repos/Rybo713/HackTool/tags" | jq -r '.[0].name')"
+  echo ""
+  echo "Checking for updates..."
+
+  if [ $update = "v1.7-beta" ]; then
+    echo "No new updates"
+  else
+    echo "New updates found: ${update}"
+    echo "Please update using the new option 7"
+    noti="${RED}${bold}1${NC}${normal}"
+    seven="7) ${RED}${bold}Update to ${update} now${NC}${normal}"
+  fi
+
+  echo "b) Back"
+  echo ""
+  read -p "> " pp
+
+  if [ $pp = "b" ]; then
+    /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+    printf "${GREEN}${bold}[INFO] ${NC}${normal}Refreshing info\n"
+    printf "${GREEN}${bold}[INFO] ${NC}${normal}This script is running as root\n"
+    printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Model info\n"
+    if [[ "$(kextstat | grep -F -e "FakeSMC" -e "VirtualSMC")" != "" ]]; then
+                    model="Hackintosh ($(sysctl -n hw.model))"
+                    printf "${GREEN}${bold}[INFO] ${NC}${normal}System is a Hackintosh\n"
+                  else
+                    model="$(sysctl -n hw.model)"
+                    printf "${GREEN}${bold}[INFO] ${NC}${normal}System is a real Mac\n"
+                  fi
+    printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting CPU info\n"
+    cpu=$(sysctl -n machdep.cpu.brand_string)
+    printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting GPU info\n"
+    gpu="$(system_profiler SPDisplaysDataType |\
+                           awk -F': ' '/^\ *Chipset Model:/ {printf $2 ", "}')"
+    gpu="${gpu//\/ \$}"
+    gpu="${gpu%,*}"
+    printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting RAM info\n"
+    ram="$(system_profiler SPHardwareDataType |\
+                           awk -F': ' '/^\ *Memory:/ {printf $2 ", "}')"
+    ram="${ram//\/ \$}"
+    ram="${ram%,*}"
+    printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Kernel info\n"
+    kernel=$(uname -r)
+    printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Battery info\n"
+    batt=$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)
+    battcon=$(system_profiler SPPowerDataType | grep "Condition" | awk '{print $2}')
+    printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Disk info\n"
+    dtype="$(diskutil info / |\
+                           awk -F': ' '/^\ *Partition Type:/ {printf $2 ", "}')"
+    dtype="${dtype//\/ \$}"
+    dtype="${dtype%,*}"
+    nvme="$(system_profiler SPNVMeDataType |\
+                           awk -F': ' '/^\ *Model:/ {printf $2 ", "}')"
+    nvme="${nvme//\/ \$}"
+    nvme="${nvme%,*}"
+    sata="$(system_profiler SPSerialATADataType |\
+                           awk -F': ' '/^\ *Model:/ {printf $2 ", "}')"
+    sata="${sata//\/ \$}"
+    sata="${sata%,*}"
+    printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting MacOS version\n"
+    OS=$(sw_vers -productVersion)
+    if [ $OS == "10.14.0" ] || [ $OS == "10.14.1" ] || [ $OS == "10.14.2" ] || [ $OS == "10.14.3" ] || [ $OS == "10.14.4" ]; then
+      name="(Mojave)"
+    else
+      name=""
+    fi
+    check=0
+    check1=0
+
+    printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking for Settings Extension\n"
+    if [ -e settings.sh ]; then
+       printf "${GREEN}${bold}[INFO] ${NC}${normal}Found Settings Extension\n"
+    else
+      check=1
+      printf "${RED}${bold}[ERROR] ${NC}${normal}Failed to find Settings Extension\n"
+    fi
+
+    printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking for Tweaks Extension\n"
+    if [ -e tweaks.sh ]; then
+      printf "${GREEN}${bold}[INFO] ${NC}${normal}Found Tweaks Extension\n"
+    else
+      check1=1
+      printf "${RED}${bold}[ERROR] ${NC}${normal}Failed to find Tweaks Extension\n"
+    fi
+    echo ""
+ fi
+fi
+
+if [ $input = 7 ]; then
+  echo ""
+  echo "Downloading HackTool $update..."
+#  wget --no-check-certificate --content-disposition https://github.com/Rybo713/HackTool/tarball/$update
+  curl -OL https://github.com/Rybo713/HackTool/tarball/$update
+  echo "Extracting files"
+  tar xvzf *.tar.gz && rm *.tar.gz
+  echo "Installing HackTool $update..."
+  mv ~/
+  echo "Installation complete, please restart script"
+  echo ""
+  echo "r) Restart"
+  echo ""
+  read -p "> " lss
+
+  if [ $lss = "r" ]; then
+    echo "Reopen script"
+    false
+    exit 0
+  fi
 fi
 
 if [ $input = "q" ] || [ $input = "exit" ]; then
