@@ -346,7 +346,7 @@ fi
 
 if [ $input = "i" ]; then
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}HackTool $version by Ryan Wong\n"
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}Hakku $version by Ryan Wong\n"
 fi
 
 if [ $input = "r" ]; then
@@ -394,7 +394,8 @@ if [ $input = "f" ]; then
    battcon=$(system_profiler SPPowerDataType | grep "Condition" | awk '{print $2}')
    printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Disk info\n"
    dtype="$(diskutil info / |\
-                          awk -F': ' '/^\ *Partition Type:/ {printf $2 ", "}')"
+                          awk -F': ' '/^\ *File System Personality:
+                          / {printf $2 ", "}')"
    dtype="${dtype//\/ \$}"
    dtype="${dtype%,*}"
    nvme="$(system_profiler SPNVMeDataType |\
@@ -543,7 +544,7 @@ fi
 
 if [ $input = 7 ]; then
   echo ""
-  echo "Downloading HackTool $update..."
+  echo "Downloading Hakku $update..."
   wget --no-check-certificate --content-disposition https://github.com/Rybo713/Hakku/tarball/$update
   curl -LJO https://github.com/Rybo713/Hakku/tarball/$update
   echo "Extracting files"
