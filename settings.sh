@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# HackTool Settings: Settings configuration for HackTool
+# Hakku Settings: Settings configuration for HackTool
 #                    Built using Bash version 3.2.57(1)-release
 #
 # The MIT License (MIT)
@@ -36,14 +36,19 @@ LYELLOW='\033[1;33m'
 bold=$(tput bold)
 normal=$(tput sgr0)
 
+while true; do
+
+/usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+
 printf "$color"
 echo ""
-echo "                 __  __           __  ______            __ "
-echo "                / / / /___ ______/ /_/_  __/___  ____  / / "
-echo "               / /_/ / __ \/ ___/ //_// / / __ \/ __ \/ / "
-echo "              / __  / /_/ / /__/ ,<  / / / /_/ / /_/ / / "
-echo "             /_/ /_/\__,_/\___/_/|_|/_/  \____/\____/_/ "
-echo "                                           v$version"
+echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+echo "                                           $version"
 echo ""
 echo "                            Ryan Wong 2019"
 echo ""
@@ -111,4 +116,9 @@ elif [ $ii = "2" ]; then
 
 elif [ $ii = "b" ]; then
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  false
+  . ./Hakku.sh
+  exit 0
 fi
+
+done
