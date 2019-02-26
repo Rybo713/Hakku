@@ -1,7 +1,7 @@
 #!/bin/bash
 #
-# HackTool: A command line utility which shows the user their system info and
-#           tools to make it easier to mount EFI and disable GateKeeper.
+# Hakku: A command-line utility which shows the user their system info and
+#                       a bunch of useful tools and tweaks.
 #                   Built using Bash version 3.2.57(1)-release
 #
 # The MIT License (MIT)
@@ -164,14 +164,15 @@ while true; do
 
 printf '\033[8;70;75t'
 
-version="v1.7.4-beta"
+version="v1.8-beta"
 printf "$color"
 echo ""
-echo "                 __  __           __  ______            __ "
-echo "                / / / /___ ______/ /_/_  __/___  ____  / / "
-echo "               / /_/ / __ \/ ___/ //_// / / __ \/ __ \/ / "
-echo "              / __  / /_/ / /__/ ,<  / / / /_/ / /_/ / / "
-echo "             /_/ /_/\__,_/\___/_/|_|/_/  \____/\____/_/ "
+echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
 echo "                                           $version"
 echo ""
 echo "                            Ryan Wong 2019"
@@ -456,7 +457,7 @@ if [ $input = 6 ]; then
   update="$(curl --silent "https://api.github.com/repos/Rybo713/HackTool/tags" | jq -r '.[0].name')"
   echo ""
 
-  if [ $update = "v1.7.4-beta" ]; then
+  if [ $update = "v1.8-beta" ]; then
     echo "No new updates"
   else
     echo "New updates found: ${update}"
