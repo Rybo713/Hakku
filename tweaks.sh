@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# HackTool Extension: Tweaks is a command line utility that lets users tweak
+# Hakku Extension: Tweaks is a command line utility that lets users tweak
 #                           the macOS system with the tweaks provided
 #                           Built using Bash version 3.2.57(1)-release
 #
@@ -41,12 +41,13 @@ normal=$(tput sgr0)
 
 printf "$color"
 echo ""
-echo "                 __  __           __  ______            __ "
-echo "                / / / /___ ______/ /_/_  __/___  ____  / / "
-echo "               / /_/ / __ \/ ___/ //_// / / __ \/ __ \/ / "
-echo "              / __  / /_/ / /__/ ,<  / / / /_/ / /_/ / / "
-echo "             /_/ /_/\__,_/\___/_/|_|/_/  \____/\____/_/ "
-echo "                                           v$version"
+echo "         ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+echo "         ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+echo "            ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+echo "            ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+echo "            ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+echo "            ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+echo "                                            $version"
 echo ""
 echo "                            Ryan Wong 2019"
 echo ""
@@ -67,12 +68,13 @@ if [ $ioo = 1 ]; then
 
   printf "$color"
   echo ""
-  echo "                 __  __           __  ______            __ "
-  echo "                / / / /___ ______/ /_/_  __/___  ____  / / "
-  echo "               / /_/ / __ \/ ___/ //_// / / __ \/ __ \/ / "
-  echo "              / __  / /_/ / /__/ ,<  / / / /_/ / /_/ / / "
-  echo "             /_/ /_/\__,_/\___/_/|_|/_/  \____/\____/_/ "
-  echo "                                           v$version"
+  echo "         ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "         ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "            ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "            ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "            ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "            ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo "                                            $version"
   echo ""
   echo "                            Ryan Wong 2019"
   echo ""
@@ -272,7 +274,7 @@ if [ $ioo = 1 ]; then
   if [ $ioo2 = "q" ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
     false
-    . ./HackTool.sh
+    . ./Hakku.sh
     exit 0
   fi
 
@@ -281,6 +283,6 @@ fi
 
 if [ $ioo = 2 ]; then
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-  . ./HackTool.sh
+  . ./Hakku.sh
   exit 0
 fi
