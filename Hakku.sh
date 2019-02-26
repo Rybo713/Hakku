@@ -454,7 +454,7 @@ fi
 if [ $input = 6 ]; then
   echo ""
   echo "Checking for updates..."
-  update="$(curl --silent "https://api.github.com/repos/Rybo713/HackTool/tags" | jq -r '.[0].name')"
+  update="$(curl --silent "https://api.github.com/repos/Rybo713/Hakku/tags" | jq -r '.[0].name')"
   echo ""
 
   if [ $update = "v1.8-beta" ]; then
@@ -544,8 +544,8 @@ fi
 if [ $input = 7 ]; then
   echo ""
   echo "Downloading HackTool $update..."
-  wget --no-check-certificate --content-disposition https://github.com/Rybo713/HackTool/tarball/$update
-  curl -LJO https://github.com/Rybo713/HackTool/tarball/$update
+  wget --no-check-certificate --content-disposition https://github.com/Rybo713/Hakku/tarball/$update
+  curl -LJO https://github.com/Rybo713/Hakku/tarball/$update
   echo "Extracting files"
   tar xvzf *.tar.gz && rm *.tar.gz
   echo ""
