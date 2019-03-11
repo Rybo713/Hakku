@@ -164,7 +164,7 @@ while true; do
 
 printf '\033[8;70;75t'
 
-version="v1.8-beta"
+version="v1.9-beta"
 printf "$color"
 echo ""
 echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
@@ -220,6 +220,7 @@ echo "4) Disable Hibernation"
 echo "5) Delete iMessage related files/folders (Use with extra caution!)"
 printf "6) Check for updates $noti\n"
 printf "$seven\n"
+echo "c) CPU Stress Test"
 echo "r) Force Reboot"
 echo "s) Force Shutdown"
 echo "f) Refresh Info"
@@ -236,6 +237,23 @@ read	-p "> " input
 
 if [ $input = "" ]; then
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+fi
+
+if [ $input = "c" ]; then
+    echo "Starting CPU Stress Test..."
+    yes > /dev/null & yes > /dev/null & yes > /dev/null & yes > /dev/null &
+    echo "Stress testing..."
+    echo "Use Intel Power Gadget to see if you are throttling, temps, package watts, utilization, etc"
+    echo ""
+    printf "${RED}${bold}WARNING: ${NC}${normal}If you want to stop CPU Stress Test, You have to type in q\n"
+    echo "q) Stop"
+    read -p "> " hf
+
+    if [ $hf = "q" ]; then
+      killall yes
+      /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+      printf "${GREEN}${bold}[INFO] ${NC}${normal}Stopped CPU Stress Test\n"
+    fi
 fi
 
 if [ $input = 5 ]; then
@@ -273,14 +291,14 @@ if [ $input = 1 ]; then
 
       if [ $answer = "disk0s1" ]; then
         echo "Mounting EFI from internal disk..."
-        mkdir "/Volumes/efi(internal)"
-        sudo mount -t msdos /dev/disk0s1 "/Volumes/efi(internal)"
-        open "/Volumes/efi(internal)"
+        mkdir "/Volumes/EFI"
+        sudo mount -t msdos /dev/disk0s1 "/Volumes/EFI"
+        open "/Volumes/EFI"
       elif [ $answer = "disk1s1" ]; then
         echo "Mounting EFI from external disk..."
-        mkdir "/Volumes/efi(external)"
-        sudo mount -t msdos /dev/disk1s1 "/Volumes/efi(external)"
-        open "/Volumes/efi(external)"
+        mkdir "/Volumes/EFI2"
+        sudo mount -t msdos /dev/disk1s1 "/Volumes/EFI2"
+        open "/Volumes/EFI2"
       fi
   fi
 
@@ -458,7 +476,7 @@ if [ $input = 6 ]; then
   update="$(curl --silent "https://api.github.com/repos/Rybo713/Hakku/tags" | jq -r '.[0].name')"
   echo ""
 
-  if [ $update = "v1.8-beta" ]; then
+  if [ $update = "v1.9-beta" ]; then
     echo "No new updates"
   else
     echo "New updates found: ${update}"
