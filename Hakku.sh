@@ -412,8 +412,7 @@ if [ $input = "f" ]; then
    battcon=$(system_profiler SPPowerDataType | grep "Condition" | awk '{print $2}')
    printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Disk info\n"
    dtype="$(diskutil info / |\
-                          awk -F': ' '/^\ *File System Personality:
-                          / {printf $2 ", "}')"
+                          awk -F': ' '/^\ *File System Personality:/ {printf $2 ", "}')"
    dtype="${dtype//\/ \$}"
    dtype="${dtype%,*}"
    nvme="$(system_profiler SPNVMeDataType |\
