@@ -128,6 +128,99 @@ chime(){
   echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
   echo ""
   printf "${NC}${normal}"
+  echo ""
+  echo "                     Enable / Disable Chime when Charging"
+  echo "                     ------------------------------------"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "                                 1. Enable"
+  echo "                                 2. Disable"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www1
+  if [ $www1 = 1 ]; then
+    chime1
+  elif [ $www1 = 2 ]; then
+    chime2
+  elif [ $www1 = "q" ]; then
+    tweaks
+  fi
+}
+
+chime1(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+  echo ""
+  echo "                          Enabling Chime when Charging"
+  echo "                          ----------------------------"
+  echo ""
+  defaults write com.apple.PowerChime ChimeOnAllHardware -bool true && \
+  open /System/Library/CoreServices/PowerChime.app
+  echo ""
+  echo ""
+  echo ""
+  echo "                        Chime when Charging is Enabled"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www1a
+  if [ $wwww1a = "q" ];
+    chime
+  fi
+}
+
+chime2(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+  echo ""
+  echo "                          Disabling Chime when Charging"
+  echo "                          -----------------------------"
+  echo ""
+  defaults write com.apple.PowerChime ChimeOnAllHardware -bool false && \
+  killall PowerChime
+  echo ""
+  echo ""
+  echo ""
+  echo "                         Chime when Charging is Disabled"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www1b
+  if [ $wwww1b = "q" ];
+    chime
+  fi
 }
 
 rsf(){
@@ -142,6 +235,22 @@ rsf(){
   echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
   echo ""
   printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www2
 }
 
 trim(){
@@ -156,6 +265,22 @@ trim(){
   echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
   echo ""
   printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www3
 }
 
 scrollbar(){
@@ -170,6 +295,22 @@ scrollbar(){
   echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
   echo ""
   printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www4
 }
 
 hiddenfiles(){
@@ -184,6 +325,22 @@ hiddenfiles(){
   echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
   echo ""
   printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www5
 }
 
 dnscache(){
@@ -198,6 +355,22 @@ dnscache(){
   echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
   echo ""
   printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www6
 }
 
 memcache(){
@@ -212,6 +385,22 @@ memcache(){
   echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
   echo ""
   printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www7
 }
 
 rootusr(){
@@ -226,6 +415,22 @@ rootusr(){
   echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
   echo ""
   printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www8
 }
 
 spotlight(){
@@ -240,6 +445,22 @@ spotlight(){
   echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
   echo ""
   printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www9
 }
 
 kextcache(){
@@ -254,4 +475,20 @@ kextcache(){
   echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
   echo ""
   printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www10
 }
