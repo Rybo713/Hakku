@@ -163,7 +163,7 @@ mainmenu(){
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "? for help                                                            $version"
-  echo ""
+  echo "$build"
   echo ""
   echo ""
   echo ""
@@ -181,7 +181,7 @@ mainmenu(){
   echo ""
   echo ""
   echo ""
-  printf "${NC}${bold}                         1) Start           Q) Exit"
+  printf "${NC}${normal}                         1) Start           Q) Exit"
   echo ""
   echo ""
   echo ""
@@ -237,7 +237,7 @@ systeminfo(){
 
  if [ $in2 = "options" ]; then
   options
-elif [ $in2 = "?" ]; then
+ elif [ $in2 = "?" ]; then
   help
  elif [ $in2 = "info" ]; then
   info
@@ -281,7 +281,7 @@ goodbye(){
   echo ""
   echo ""
   echo ""
-  printf "${NC}${bold}                                 Are you sure?\n"
+  printf "${NC}${normal}                                 Are you sure?\n"
   echo "                                     (Y/N) "
   echo ""
   echo ""
@@ -409,7 +409,7 @@ options(){
   echo "                                4) Force Reboot"
   echo "                               5) Force Shutdown"
   echo "                    6) Delete iMessage related files/folders"
-  echo ""
+  echo "                               7) CPU Stress Test"
   echo ""
   echo "press q to go back"
   echo ""
@@ -429,6 +429,8 @@ options(){
    shutdown1
  elif [ $input5 = 6 ]; then
    imessage
+ elif [ $input5 = 7 ]; then
+   stress
   fi
 
 }
@@ -891,6 +893,40 @@ imessage(){
   echo ""
   read -p "> " ii
     if [ $ii = "q" ]; then
+      options
+    fi
+}
+
+stress(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo ""
+  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  printf "${NC}${normal}"
+  echo ""
+  echo "                              CPU Stress Test"
+  echo "                              ---------------"
+  echo ""
+  printf "${RED}${bold}WARNING: ${NC}${normal}If you want to stop CPU Stress Test, You have to type in q\n"
+  echo ""
+  echo ""
+  echo "                          CPU Stress Test Started"
+  echo ""
+  echo "Use Intel Power Gadget to see if you are throttling, temps, package watts, utilization, etc"
+  echo ""
+  yes > /dev/null & yes > /dev/null & yes > /dev/null & yes > /dev/null &
+  echo ""
+  echo "press q to stop test and go back"
+  echo ""
+  read -p "> " ii
+    if [ $ii = "q" ]; then
+      killall yes
       options
     fi
 }
