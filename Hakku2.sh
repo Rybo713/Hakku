@@ -38,7 +38,7 @@ bold=$(tput bold)
 normal=$(tput sgr0)
 
 version="v2.0-alpha"
-build="build-20190407"
+build="build-20190408"
 updating="Please check for updates."
 color="${YELLOW}${bold}"
 

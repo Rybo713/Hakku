@@ -78,16 +78,16 @@ tweaks(){
   echo "                          1) Chime When Charging"
   echo "                     2) Auto Restart on System Freeze"
   echo "                  3) Force Enable Trim (On non-Apple SSDs)"
-  echo "                          4) Scrollbar Visibility"
+  echo "                           4) Rebuild KextCache"
   echo "                           5) Show Hidden Files"
   echo "                            6) Clear DNS Cache"
   echo "                          7) Purge Memory Cache"
   echo "                       8) Enable / Disable Root User"
   echo "                   9) Erase Spotlight Index and Rebuild"
-  echo "                          10) Rebuild KextCache"
   echo ""
+  printf "${RED}${bold}           If you don't know what an option does, don't press it\n"
   echo ""
-  echo "press q to go back"
+  printf "${NC}${normal}press q to go back\n"
   echo ""
   read -p "> " www
   if [ $www = "q" ]; then
@@ -99,7 +99,7 @@ tweaks(){
   elif [ $www = 3 ]; then
     trim
   elif [ $www = 4 ]; then
-    scrollbar
+    kextcache
   elif [ $www = 5 ]; then
     hiddenfiles
   elif [ $www = 6 ]; then
@@ -110,12 +110,11 @@ tweaks(){
     rootusr
   elif [ $www = 9 ]; then
     spotlight
-  elif [ $www = 10 ]; then
-    kextcache
   fi
 
 }
 
+# Chime
 chime(){
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
@@ -183,7 +182,7 @@ chime1(){
   echo "press q to go back"
   echo ""
   read -p "> " www1a
-  if [ $wwww1a = "q" ];
+  if [ $www1a = "q" ]; then
     chime
   fi
 }
@@ -218,11 +217,12 @@ chime2(){
   echo "press q to go back"
   echo ""
   read -p "> " www1b
-  if [ $wwww1b = "q" ];
+  if [ $www1b = "q" ]; then
     chime
   fi
 }
 
+# RSF
 rsf(){
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
@@ -236,14 +236,14 @@ rsf(){
   echo ""
   printf "${NC}${normal}"
   echo ""
+  echo "                        Auto Restart on System Freeze"
+  echo "                        -----------------------------"
   echo ""
   echo ""
   echo ""
   echo ""
-  echo ""
-  echo ""
-  echo ""
-  echo ""
+  echo "                                1. Enable"
+  echo "                                2. Disable"
   echo ""
   echo ""
   echo ""
@@ -251,8 +251,84 @@ rsf(){
   echo "press q to go back"
   echo ""
   read -p "> " www2
+  if [ $www2 = 1 ]; then
+    rsf1
+  elif [ $www2 = 2 ]; then
+    rsf2
+  elif [ $www2 = "q" ]; then
+    tweaks
+  fi
 }
 
+rsf1(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+  echo ""
+  echo "                        Enabling Auto Restart on System Freeze"
+  echo "                        --------------------------------------"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  sudo systemsetup -setrestartfreeze on
+  echo "                        Enabled Auto Restart on System Freeze"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www2a
+  if [ $www2a = "q" ]; then
+    rsf
+  fi
+}
+
+rsf2(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+  echo ""
+  echo "                        Disabling Auto Restart on System Freeze"
+  echo "                        ---------------------------------------"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  sudo systemsetup -setrestartfreeze off
+  echo "                        Disabled Auto Restart on System Freeze"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www2b
+  if [ $www2b = "q" ]; then
+    rsf
+  fi
+}
+
+# Trim
 trim(){
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
@@ -269,11 +345,12 @@ trim(){
   echo ""
   echo ""
   echo ""
+  echo "                    Force Enable Trim on non-Apple SSDs"
+  echo "                    -----------------------------------"
   echo ""
   echo ""
-  echo ""
-  echo ""
-  echo ""
+  forcetrim
+  echo "                               Enabled Trim"
   echo ""
   echo ""
   echo ""
@@ -281,38 +358,12 @@ trim(){
   echo "press q to go back"
   echo ""
   read -p "> " www3
+  if [ $www3 = "q" ]; then
+    tweaks
+  fi
 }
 
-scrollbar(){
-  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-  printf "$color"
-  echo "                                                                      $version"
-  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
-  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
-  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
-  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
-  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
-  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
-  echo ""
-  printf "${NC}${normal}"
-  echo ""
-  echo ""
-  echo ""
-  echo ""
-  echo ""
-  echo ""
-  echo ""
-  echo ""
-  echo ""
-  echo ""
-  echo ""
-  echo ""
-  echo ""
-  echo "press q to go back"
-  echo ""
-  read -p "> " www4
-}
-
+# HiddenFiles
 hiddenfiles(){
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
@@ -329,20 +380,96 @@ hiddenfiles(){
   echo ""
   echo ""
   echo ""
+  echo "                         Show / Hide Hidden Files"
+  echo "                         ------------------------"
   echo ""
   echo ""
-  echo ""
-  echo ""
-  echo ""
-  echo ""
+  echo "                              1. Enable"
+  echo "                              2. Disable"
   echo ""
   echo ""
   echo ""
   echo "press q to go back"
   echo ""
   read -p "> " www5
+  if [ $www5 = 1 ]; then
+    hiddenfiles1
+  elif [ $www5 = 2 ]; then
+    hiddenfiles2
+  elif [ $www5 = "q" ]; then
+    tweaks
+  fi
 }
 
+hiddenfiles1(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "                             Show Hidden Files"
+  echo "                             -----------------"
+  echo ""
+  echo ""
+  defaults write com.apple.finder AppleShowAllFiles true
+  echo "                        Finished showing Hidden Files"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www5a
+  if [ $www5a = "q" ]; then
+    hiddenfiles
+  fi
+}
+
+hiddenfiles2(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "                             Hide Hidden Files"
+  echo "                             -----------------"
+  echo ""
+  echo ""
+  defaults write com.apple.finder AppleShowAllFiles false
+  echo "                        Finished hiding Hidden Files"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www5b
+  if [ $www5b = "q" ]; then
+    hiddenfiles
+  fi
+}
+
+# DNSCache
 dnscache(){
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
@@ -359,11 +486,13 @@ dnscache(){
   echo ""
   echo ""
   echo ""
+  echo "                              Clearing DNS Cache"
+  echo "                              ------------------"
   echo ""
   echo ""
-  echo ""
-  echo ""
-  echo ""
+  sudo dscacheutil -flushcache && \
+  sudo killall -HUP mDNSResponder
+  echo "                              Cleared DNS Cache"
   echo ""
   echo ""
   echo ""
@@ -371,8 +500,12 @@ dnscache(){
   echo "press q to go back"
   echo ""
   read -p "> " www6
+  if [ $www6 = "q" ]; then
+    tweaks
+  fi
 }
 
+# MemCache
 memcache(){
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
@@ -389,11 +522,12 @@ memcache(){
   echo ""
   echo ""
   echo ""
+  echo "                             Purging Memory Cache"
+  echo "                             --------------------"
   echo ""
   echo ""
-  echo ""
-  echo ""
-  echo ""
+  sudo purge
+  echo "                             Memory Cache Purged"
   echo ""
   echo ""
   echo ""
@@ -401,8 +535,12 @@ memcache(){
   echo "press q to go back"
   echo ""
   read -p "> " www7
+  if [ $www7 = "q" ]; then
+    tweaks
+  fi
 }
 
+# RootUser
 rootusr(){
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
@@ -419,11 +557,11 @@ rootusr(){
   echo ""
   echo ""
   echo ""
+  echo "                         Enable / Disable Root User"
   echo ""
   echo ""
-  echo ""
-  echo ""
-  echo ""
+  echo "                                1. Enable"
+  echo "                                2. Disable"
   echo ""
   echo ""
   echo ""
@@ -431,8 +569,84 @@ rootusr(){
   echo "press q to go back"
   echo ""
   read -p "> " www8
+  if [ $www8 = 1 ]; then
+    rootusr1
+  elif [ $www8 = 2 ]; then
+    rootusr2
+  elif [ $www8 = "q" ]; then
+    tweaks
+  fi
 }
 
+rootusr1(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "                             Enabling Root User"
+  echo "                             ------------------"
+  echo ""
+  echo ""
+  dsenableroot
+  echo "                             Enabled Root User"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www8a
+  if [ $www8a = "q" ]; then
+    rootusr
+  fi
+}
+
+rootusr2(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "                             Disabling Root User"
+  echo "                             -------------------"
+  echo ""
+  echo ""
+  dsenableroot -d
+  echo "                             Disabled Root User"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " www8b
+  if [ $www8b = "q" ]; then
+    rootusr
+  fi
+}
+
+# Spotlight
 spotlight(){
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
@@ -449,11 +663,12 @@ spotlight(){
   echo ""
   echo ""
   echo ""
+  echo "                     Erasing and Rebuilding Spotlight"
+  echo "                     --------------------------------"
   echo ""
   echo ""
-  echo ""
-  echo ""
-  echo ""
+  mdutil -E /dev/disk0s2
+  echo "                  Finsihed Erasing and Rebuilding Spotlight"
   echo ""
   echo ""
   echo ""
@@ -461,8 +676,12 @@ spotlight(){
   echo "press q to go back"
   echo ""
   read -p "> " www9
+  if [ $www9 = "q" ]; then
+    tweaks
+  fi
 }
 
+# KextCache
 kextcache(){
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
@@ -479,11 +698,12 @@ kextcache(){
   echo ""
   echo ""
   echo ""
+  echo "                          Rebuilding Kext Cache"
+  echo "                          ---------------------"
   echo ""
   echo ""
-  echo ""
-  echo ""
-  echo ""
+  sudo kextcache -i /
+  echo "                      Finished Rebuilding Kext Cache"
   echo ""
   echo ""
   echo ""
@@ -491,4 +711,7 @@ kextcache(){
   echo "press q to go back"
   echo ""
   read -p "> " www10
+  if [ $www10 = "q" ]; then
+    tweaks
+  fi
 }
