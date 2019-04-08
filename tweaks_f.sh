@@ -115,3 +115,143 @@ tweaks(){
   fi
 
 }
+
+chime(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+}
+
+rsf(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+}
+
+trim(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+}
+
+scrollbar(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+}
+
+hiddenfiles(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+}
+
+dnscache(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+}
+
+memcache(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+}
+
+rootusr(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+}
+
+spotlight(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+}
+
+kextcache(){
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
+  echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
+  echo "               ██║   ██║ █╗ ██║█████╗  ███████║█████╔╝ ███████╗";
+  echo "               ██║   ██║███╗██║██╔══╝  ██╔══██║██╔═██╗ ╚════██║";
+  echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
+  echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
+  echo ""
+  printf "${NC}${normal}"
+}

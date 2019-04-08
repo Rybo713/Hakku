@@ -43,7 +43,7 @@ updating="Please check for updates."
 color="${YELLOW}${bold}"
 
 . ./functions.sh
-# . ./tweaks_f.sh
+. ./tweaks_f.sh
 . ./settings_f.sh
 . ./update_f.sh
 refresh
