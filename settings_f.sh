@@ -29,7 +29,7 @@
 
 settings(){
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-  printf "${YELLOW}${bold}"
+  printf "$color"
   echo "                                                                      $version"
   echo ""
   echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
@@ -67,7 +67,7 @@ settings(){
 
 voiceover(){
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-  printf "${YELLOW}${bold}"
+  printf "$color"
   echo "                                                                      $version"
   echo ""
   echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
@@ -96,7 +96,7 @@ voiceover(){
 
   if [ $op1 = 1 ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-    printf "${YELLOW}${bold}"
+    printf "$color"
     echo "                                                                      $version"
     echo ""
     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
@@ -129,7 +129,7 @@ voiceover(){
 
   elif [ $op1 = 2 ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-    printf "${YELLOW}${bold}"
+    printf "$color"
     echo "                                                                      $version"
     echo ""
     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
@@ -165,7 +165,7 @@ voiceover(){
 
 colorlogo(){
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-  printf "${YELLOW}${bold}"
+  printf "$color"
   echo "                                                                      $version"
   echo ""
   echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
@@ -194,7 +194,7 @@ colorlogo(){
 
   if [ $op2 = 1 ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-    printf "${YELLOW}${bold}"
+    printf "$color"
     echo "                                                                      $version"
     echo ""
     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
@@ -227,7 +227,7 @@ colorlogo(){
 
   elif [ $op2 = 2 ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-    printf "${YELLOW}${bold}"
+    printf "$color"
     echo "                                                                      $version"
     echo ""
     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
@@ -260,7 +260,7 @@ colorlogo(){
 
   elif [ $op2 = 3 ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-    printf "${YELLOW}${bold}"
+    printf "$color"
     echo "                                                                      $version"
     echo ""
     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
@@ -293,7 +293,7 @@ colorlogo(){
 
   elif [ $op2 = 4 ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-    printf "${YELLOW}${bold}"
+    printf "$color"
     echo "                                                                      $version"
     echo ""
     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
@@ -326,7 +326,7 @@ colorlogo(){
 
   elif [ $op2 = 5 ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-    printf "${YELLOW}${bold}"
+    printf "$color"
     echo "                                                                      $version"
     echo ""
     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";

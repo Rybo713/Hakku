@@ -37,8 +37,9 @@ LYELLOW='\033[1;33m'
 bold=$(tput bold)
 normal=$(tput sgr0)
 
-version="v2.0-alpha"
+version="v2.0-alpha-build20"
 updating="Please check for updates."
+color="${YELLOW}${bold}"
 
 . ./functions.sh
 # . ./tweaks_f.sh

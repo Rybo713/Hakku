@@ -64,7 +64,7 @@ risk(){
 
 tweaks(){
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-  printf "${YELLOW}${bold}"
+  printf "$color"
   echo "                                                                      $version"
   echo "            ████████╗██╗    ██╗███████╗ █████╗ ██╗  ██╗███████╗";
   echo "            ╚══██╔══╝██║    ██║██╔════╝██╔══██╗██║ ██╔╝██╔════╝";
