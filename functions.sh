@@ -329,7 +329,7 @@ help(){
   echo "                           tweaks  | Tweaks Page"
   echo "                           info    | Info Page"
   echo "                           settings| Settings Page"
-  echo "                           update  | Check and Update Hakku"
+  printf "                           update  | Check and Update Hakku$noti\n"
   echo ""
   echo "press q to go back"
   echo ""

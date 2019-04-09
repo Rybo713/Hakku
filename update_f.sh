@@ -42,7 +42,7 @@ update(){
   echo ""
   printf "${NC}${normal}"
   echo ""
-  echo "                                   Updates"
+  printf "                                   Updates$noti\n"
   echo "                                   -------"
   echo ""
   echo ""
@@ -124,12 +124,13 @@ check(){
   echo ""
   if [ $update = "v2.0.1-beta" ]; then
     updating="No new updates"
-    echo "                             No new updates"
+    printf "${GREEN}${bold}                             No new updates${NC}${normal}\n"
+    noti=""
   else
     updating="New updates found: ${update}"
     dl="press d to download Hakku ${update}"
-    echo "                         New updates found: ${update}"
-    noti="${RED}${bold}1${NC}${normal}"
+    printf "${RED}${bold}                         New updates found: ${update}${NC}${normal}\n"
+    noti="${RED}${bold}[1]${NC}${normal}\n"
   fi
   echo ""
   echo ""
