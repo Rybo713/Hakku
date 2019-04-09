@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Hakku2 TWeaks Functions: A totally reworked command line utility which shows
+# Hakku2 Tweaks Functions: A totally reworked command line utility which shows
 #                           the user their system info and a bunch of useful
 #                                          tools and tweaks.
 #                              Built using Bash version 3.2.57(1)-release
@@ -28,6 +28,7 @@
 # SOFTWARE.
 
 risk(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -60,9 +61,11 @@ risk(){
     elif [ $w = 2 ]; then
       mainmenu
     fi
+  done
 }
 
 tweaks(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -111,11 +114,12 @@ tweaks(){
   elif [ $www = 9 ]; then
     spotlight
   fi
-
+  done
 }
 
 # Chime
 chime(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -150,9 +154,11 @@ chime(){
   elif [ $www1 = "q" ]; then
     tweaks
   fi
+  done
 }
 
 chime1(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -185,9 +191,11 @@ chime1(){
   if [ $www1a = "q" ]; then
     chime
   fi
+  done
 }
 
 chime2(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -220,10 +228,12 @@ chime2(){
   if [ $www1b = "q" ]; then
     chime
   fi
+  done
 }
 
 # RSF
 rsf(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -258,9 +268,11 @@ rsf(){
   elif [ $www2 = "q" ]; then
     tweaks
   fi
+  done
 }
 
 rsf1(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -292,9 +304,11 @@ rsf1(){
   if [ $www2a = "q" ]; then
     rsf
   fi
+  done
 }
 
 rsf2(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -326,10 +340,12 @@ rsf2(){
   if [ $www2b = "q" ]; then
     rsf
   fi
+  done
 }
 
 # Trim
 trim(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -361,10 +377,12 @@ trim(){
   if [ $www3 = "q" ]; then
     tweaks
   fi
+  done
 }
 
 # HiddenFiles
 hiddenfiles(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -399,9 +417,11 @@ hiddenfiles(){
   elif [ $www5 = "q" ]; then
     tweaks
   fi
+  done
 }
 
 hiddenfiles1(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -433,9 +453,11 @@ hiddenfiles1(){
   if [ $www5a = "q" ]; then
     hiddenfiles
   fi
+  done
 }
 
 hiddenfiles2(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -467,10 +489,12 @@ hiddenfiles2(){
   if [ $www5b = "q" ]; then
     hiddenfiles
   fi
+  done
 }
 
 # DNSCache
 dnscache(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -503,10 +527,12 @@ dnscache(){
   if [ $www6 = "q" ]; then
     tweaks
   fi
+  done
 }
 
 # MemCache
 memcache(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -538,10 +564,12 @@ memcache(){
   if [ $www7 = "q" ]; then
     tweaks
   fi
+  done
 }
 
 # RootUser
 rootusr(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -576,9 +604,11 @@ rootusr(){
   elif [ $www8 = "q" ]; then
     tweaks
   fi
+  done
 }
 
 rootusr1(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -610,9 +640,11 @@ rootusr1(){
   if [ $www8a = "q" ]; then
     rootusr
   fi
+  done
 }
 
 rootusr2(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -644,10 +676,12 @@ rootusr2(){
   if [ $www8b = "q" ]; then
     rootusr
   fi
+  done
 }
 
 # Spotlight
 spotlight(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -679,10 +713,12 @@ spotlight(){
   if [ $www9 = "q" ]; then
     tweaks
   fi
+  done
 }
 
 # KextCache
 kextcache(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -714,4 +750,5 @@ kextcache(){
   if [ $www10 = "q" ]; then
     tweaks
   fi
+  done
 }

@@ -160,6 +160,7 @@ refresh(){
 
 # mainmenu
 mainmenu(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "? for help                                                            $version"
@@ -195,10 +196,13 @@ mainmenu(){
   elif [ $input = "?" ]; then
     help
   fi
+
+done
 }
 
 # systeminfo
 systeminfo(){
+  while true; do
  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
  printf "$color"
  echo "                                                                      $version"
@@ -209,7 +213,6 @@ systeminfo(){
  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
- echo ""
  printf "${NC}${normal}"
  printf "${CYAN}${bold}CPU Info: ${NC}${normal}"
  echo "$cpu"
@@ -233,6 +236,7 @@ systeminfo(){
  printf "${GREEN}${bold}              $full ${NC}${normal}\n"
  printf "              Condition : $battcon\n"
  echo ""
+ echo "press q to go back"
  read -p "> " in2
 
  if [ $in2 = "options" ]; then
@@ -246,6 +250,8 @@ systeminfo(){
   risk
  elif [ $in2 = "exit" ]; then
   goodbye
+ elif [ $in2 = "q" ]; then
+  mainmenu
  elif [ $in2 = "update" ]; then
   . ./update_f.sh
   update
@@ -256,10 +262,12 @@ systeminfo(){
   . ./settings_f.sh
   settings
  fi
+ done
 }
 
 # exits program
 goodbye(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -293,10 +301,12 @@ goodbye(){
   elif [ $in = "n" ] || [ $in = "N" ]; then
     mainmenu
   fi
+ done
 }
 
 # help page
 help(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -348,10 +358,12 @@ help(){
   elif [ $input3 = "q" ]; then
     mainmenu
   fi
+ done
 }
 
 # info page
 info(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -383,10 +395,12 @@ info(){
   if [ $input4 = "q" ]; then
    mainmenu
   fi
+ done
 }
 
 # options
 options(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -432,10 +446,11 @@ options(){
  elif [ $input5 = 7 ]; then
    stress
   fi
-
+ done
 }
 
 efi(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -661,9 +676,11 @@ efi(){
   elif [ $in3 = "q" ]; then
     options
   fi
+ done
 }
 
 gatekeeper(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -759,9 +776,11 @@ gatekeeper(){
     elif [ $i = "q" ]; then
       options
     fi
+  done
 }
 
 hibernation(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -789,9 +808,11 @@ hibernation(){
     if [ $ii = "q" ]; then
       options
     fi
+  done
 }
 
 reboot1(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -824,9 +845,11 @@ reboot1(){
   elif [ $in = "n" ] || [ $in = "N" ]; then
     options
   fi
+ done
 }
 
 shutdown1(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -860,9 +883,11 @@ shutdown1(){
   elif [ $in = "n" ] || [ $in = "N" ]; then
     options
   fi
+ done
 }
 
 imessage(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -895,9 +920,11 @@ imessage(){
     if [ $ii = "q" ]; then
       options
     fi
+  done
 }
 
 stress(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -929,4 +956,5 @@ stress(){
       killall yes
       options
     fi
+  done
 }

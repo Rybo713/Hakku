@@ -28,6 +28,7 @@
 # SOFTWARE.
 
 settings(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -63,9 +64,11 @@ settings(){
     elif [ $op = "q" ]; then
       mainmenu
     fi
+  done
 }
 
 voiceover(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -161,9 +164,11 @@ voiceover(){
   elif [ $op1 = "q" ]; then
     settings
   fi
+  done
 }
 
 colorlogo(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -360,4 +365,5 @@ colorlogo(){
   elif [ $op2 = "q" ]; then
     settings
   fi
+ done
 }

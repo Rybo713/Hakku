@@ -28,6 +28,7 @@
 # SOFTWARE.
 
 update(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -60,9 +61,11 @@ update(){
     elif [ $p = "c" ]; then
       check
     fi
+  done
 }
 
 download(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -95,10 +98,11 @@ download(){
     if [ $pp = "q" ]; then
       mainmenu
     fi
-
+  done
 }
 
 check(){
+  while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
@@ -118,7 +122,7 @@ check(){
   echo ""
   update="$(curl --silent "https://api.github.com/repos/Rybo713/Hakku/tags" | jq -r '.[0].name')"
   echo ""
-  if [ $update = "v2.0-alpha" ]; then
+  if [ $update = "v2.0.1-beta" ]; then
     updating="No new updates"
     echo "                             No new updates"
   else
@@ -140,4 +144,5 @@ check(){
     elif [ $ppp = "d" ]; then
       download
     fi
+  done
 }
