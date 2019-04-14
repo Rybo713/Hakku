@@ -26,136 +26,144 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-# Refresh
+# Clear Console
+clear
+
+# Loading Screen
 refresh(){
-  if [[ $EUID -ne 0 ]]; then
-    printf "${RED}${bold}[ERROR] ${NC}${normal}This script must be run as root\n"
-    exit 1
-  elif [[ $EUID -ne 1 ]]; then
-    echo ""
-  fi
+if [[ $EUID -ne 0 ]]; then
+  printf "${RED}${bold}[ERROR] ${NC}${normal}This script must be run as root\n"
+  exit 1
+elif [[ $EUID -ne 1 ]]; then
+  echo ""
+fi
 
-  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+/usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
 
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking if script is running as root\n"
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}This script is running as root\n"
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking system if it meets requirements\n"
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking if script is running as root\n"
+printf "${GREEN}${bold}[INFO] ${NC}${normal}This script is running as root\n"
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking system if it meets requirements\n"
 
-  if
-  command -v brew > /dev/null ; then
-    printf "${GREEN}${bold}[INFO] ${NC}${normal}HomeBrew package is installed\n"
-  else
-    printf "${RED}${bold}[ERROR] ${NC}${normal}HomeBrew package is not installed\n"
-    exit 0
-  fi
+if
+command -v brew > /dev/null ; then
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}HomeBrew package is installed\n"
+else
+  printf "${RED}${bold}[ERROR] ${NC}${normal}HomeBrew package is not installed\n"
+  exit 0
+fi
 
-  if command -v jq > /dev/null ; then
-    printf "${GREEN}${bold}[INFO] ${NC}${normal}jq package is installed\n"
-  else
-    printf "${RED}${bold}[ERROR] ${NC}${normal}jq package is not installed\n"
-    echo "Install jq with 'brew install jq'"
-    exit 0
-  fi
+if command -v jq > /dev/null ; then
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}jq package is installed\n"
+else
+  printf "${RED}${bold}[ERROR] ${NC}${normal}jq package is not installed\n"
+  echo "Install jq with 'brew install jq'"
+  exit 0
+fi
 
-  if command -v wget > /dev/null ; then
-    printf "${GREEN}${bold}[INFO] ${NC}${normal}wget package is installed\n"
-  else
-    printf "${RED}${bold}[ERROR] ${NC}${normal}wget package is not installed\n"
-    echo "Install wget with 'brew install wget'"
-    exit 0
-  fi
+if command -v wget > /dev/null ; then
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}wget package is installed\n"
+else
+  printf "${RED}${bold}[ERROR] ${NC}${normal}wget package is not installed\n"
+  echo "Install wget with 'brew install wget'"
+  exit 0
+fi
 
-  if command -v curl > /dev/null ; then
-    printf "${GREEN}${bold}[INFO] ${NC}${normal}curl package is installed\n"
-  else
-    printf "${RED}${bold}[ERROR] ${NC}${normal}curl package is not installed\n"
-    echo "Curl should be installed with macOS"
-    exit 0
-  fi
+if command -v curl > /dev/null ; then
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}curl package is installed\n"
+else
+  printf "${RED}${bold}[ERROR] ${NC}${normal}curl package is not installed\n"
+  echo "Curl should be installed with macOS"
+  exit 0
+fi
 
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Model info\n"
-  if [[ "$(kextstat | grep -F -e "FakeSMC" -e "VirtualSMC")" != "" ]]; then
-                  model="Hackintosh ($(sysctl -n hw.model))"
-                  printf "${GREEN}${bold}[INFO] ${NC}${normal}System is a Hackintosh\n"
-                else
-                  model="$(sysctl -n hw.model)"
-                  printf "${GREEN}${bold}[INFO] ${NC}${normal}System is a real Mac\n"
-                fi
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting CPU info\n"
-  cpu=$(sysctl -n machdep.cpu.brand_string)
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting GPU info\n"
-  gpu="$(system_profiler SPDisplaysDataType |\
-                         awk -F': ' '/^\ *Chipset Model:/ {printf $2 ", "}')"
-  gpu="${gpu//\/ \$}"
-  gpu="${gpu%,*}"
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting RAM info\n"
-  ram="$(system_profiler SPHardwareDataType |\
-                         awk -F': ' '/^\ *Memory:/ {printf $2 ", "}')"
-  ram="${ram//\/ \$}"
-  ram="${ram%,*}"
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Kernel info\n"
-  kernel=$(uname -r)
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Battery info\n"
-  batt=$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)
-  if [ "$batt" -le "20" ]; then
-    low="Low Battery"
-  elif [ "$batt" -ge "100" ]; then
-    full="Fully Charged"
-  else
-    printf ""
-  fi
-  battcon=$(system_profiler SPPowerDataType | grep "Condition" | awk '{print $2}')
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Disk info\n"
-  dtype="$(diskutil info / |\
-                         awk -F': ' '/^\ *File System Personality:/ {printf $2 ", "}')"
-  dtype="${dtype//\/ \$}"
-  dtype="${dtype%,*}"
-  nvme="$(system_profiler SPNVMeDataType |\
-                         awk -F': ' '/^\ *Model:/ {printf $2 ", "}')"
-  nvme="${nvme//\/ \$}"
-  nvme="${nvme%,*}"
-  sata="$(system_profiler SPSerialATADataType |\
-                         awk -F': ' '/^\ *Model:/ {printf $2 ", "}')"
-  sata="${sata//\/ \$}"
-  sata="${sata%,*}"
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting MacOS version\n"
-  OS=$(sw_vers -productVersion)
-  if [ $OS == "10.14.0" ] || [ $OS == "10.14.1" ] || [ $OS == "10.14.2" ] || [ $OS == "10.14.3" ] || [ $OS == "10.14.4" ]; then
-    name="(Mojave)"
-  elif [ $OS == "10.13.0" ] || [ $OS == "10.13.1" ] || [ $OS == "10.13.2" ] || [ $OS == "10.13.3" ] || [ $OS == "10.13.4" ] || [ $OS == "10.13.5" ] || [ $OS == "10.13.6" ]; then
-    name="(High Sierra)"
-  elif [ $OS == "10.12.0" ] || [ $OS == "10.12.1" ] || [ $OS == "10.12.2" ] || [ $OS == "10.12.3" ] || [ $OS == "10.12.4" ] || [ $OS == "10.12.5" ] || [ $OS == "10.12.6" ]; then
-    name="(Sierra)"
-  else
-    name=""
-  fi
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Model info\n"
+if [[ "$(kextstat | grep -F -e "FakeSMC" -e "VirtualSMC")" != "" ]]; then
+                model="Hackintosh ($(sysctl -n hw.model))"
+                printf "${GREEN}${bold}[INFO] ${NC}${normal}System is a Hackintosh\n"
+              else
+                model="$(sysctl -n hw.model)"
+                printf "${GREEN}${bold}[INFO] ${NC}${normal}System is a real Mac\n"
+              fi
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting CPU info\n"
+cpu=$(sysctl -n machdep.cpu.brand_string)
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting GPU info\n"
+gpu="$(system_profiler SPDisplaysDataType |\
+                       awk -F': ' '/^\ *Chipset Model:/ {printf $2 ", "}')"
+gpu="${gpu//\/ \$}"
+gpu="${gpu%,*}"
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting RAM info\n"
+ram="$(system_profiler SPHardwareDataType |\
+                       awk -F': ' '/^\ *Memory:/ {printf $2 ", "}')"
+ram="${ram//\/ \$}"
+ram="${ram%,*}"
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Kernel info\n"
+kernel=$(uname -r)
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Battery info\n"
+batt=$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)
+if [ "$batt" -le "20" ]; then
+  low="Low Battery"
+elif [ "$batt" -ge "100" ]; then
+  full="Fully Charged"
+else
+  printf ""
+fi
+battcon=$(system_profiler SPPowerDataType | grep "Condition" | awk '{print $2}')
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Disk info\n"
+dtype="$(diskutil info / |\
+                       awk -F': ' '/^\ *File System Personality:/ {printf $2 ", "}')"
+dtype="${dtype//\/ \$}"
+dtype="${dtype%,*}"
+nvme="$(system_profiler SPNVMeDataType |\
+                       awk -F': ' '/^\ *Model:/ {printf $2 ", "}')"
+nvme="${nvme//\/ \$}"
+nvme="${nvme%,*}"
+sata="$(system_profiler SPSerialATADataType |\
+                       awk -F': ' '/^\ *Model:/ {printf $2 ", "}')"
+sata="${sata//\/ \$}"
+sata="${sata%,*}"
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting MacOS version\n"
+OS=$(sw_vers -productVersion)
+if [ $OS == "10.14.0" ] || [ $OS == "10.14.1" ] || [ $OS == "10.14.2" ] || [ $OS == "10.14.3" ] || [ $OS == "10.14.4" ]; then
+  name="(Mojave)"
+elif [ $OS == "10.13.0" ] || [ $OS == "10.13.1" ] || [ $OS == "10.13.2" ] || [ $OS == "10.13.3" ] || [ $OS == "10.13.4" ] || [ $OS == "10.13.5" ] || [ $OS == "10.13.6" ]; then
+  name="(High Sierra)"
+elif [ $OS == "10.12.0" ] || [ $OS == "10.12.1" ] || [ $OS == "10.12.2" ] || [ $OS == "10.12.3" ] || [ $OS == "10.12.4" ] || [ $OS == "10.12.5" ] || [ $OS == "10.12.6" ]; then
+  name="(Sierra)"
+else
+  name="(Unknown)"
+fi
 
-  check=0
-  check1=0
+check=0
+check1=0
 
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking for Settings Extension\n"
-  if [ -e settings_f.sh ]; then
-     printf "${GREEN}${bold}[INFO] ${NC}${normal}Found Settings Extension\n"
-  else
-    check=1
-    printf "${RED}${bold}[ERROR] ${NC}${normal}Failed to find Settings Extension\n"
-  fi
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking for Settings Extension\n"
+if [ -e settings_f.sh ]; then
+   printf "${GREEN}${bold}[INFO] ${NC}${normal}Found Settings Extension\n"
+else
+  check=1
+  printf "${RED}${bold}[ERROR] ${NC}${normal}Failed to find Settings Extension\n"
+fi
 
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking for Tweaks Extension\n"
-  if [ -e tweaks_f.sh ]; then
-    printf "${GREEN}${bold}[INFO] ${NC}${normal}Found Tweaks Extension\n"
-  else
-    check1=1
-    printf "${RED}${bold}[ERROR] ${NC}${normal}Failed to find Tweaks Extension\n"
-  fi
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking for Tweaks Extension\n"
+if [ -e tweaks_f.sh ]; then
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}Found Tweaks Extension\n"
+else
+  check1=1
+  printf "${RED}${bold}[ERROR] ${NC}${normal}Failed to find Tweaks Extension\n"
+fi
 
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking for Update Extension\n"
-  if [ -e update_f.sh ]; then
-    printf "${GREEN}${bold}[INFO] ${NC}${normal}Found Update Extension\n"
-  else
-    check1=1
-    printf "${RED}${bold}[ERROR] ${NC}${normal}Failed to find Update Extension\n"
-  fi
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking for Update Extension\n"
+if [ -e update_f.sh ]; then
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}Found Update Extension\n"
+else
+  check1=1
+  printf "${RED}${bold}[ERROR] ${NC}${normal}Failed to find Update Extension\n"
+fi
+
+echo ""
+echo "                           Loading..."
+sleep 1
+mainmenu
 }
 
 # mainmenu
@@ -271,7 +279,6 @@ goodbye(){
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
-
   echo ""
   echo ""
   echo ""
@@ -415,7 +422,7 @@ options(){
   printf "${NC}${normal}"
   echo ""
   echo ""
-  echo "                                    Options"
+  echo "                                    Options (1/2)"
   echo "                                    -------"
   echo "                            1) Mount / Unmount EFI"
   echo "                         2) Enable / Disable Gatekeeper"
@@ -424,13 +431,15 @@ options(){
   echo "                               5) Force Shutdown"
   echo "                    6) Delete iMessage related files/folders"
   echo "                               7) CPU Stress Test"
-  echo ""
+  echo "press e for next page"
   echo "press q to go back"
   echo ""
   read -p "> " input5
 
   if [ $input5 = "q" ]; then
    mainmenu
+ elif [ $input5 = "e" ]; then
+   options2
  elif [ $input5 = 1 ]; then
    efi
  elif [ $input5 = 2 ]; then
@@ -445,6 +454,541 @@ options(){
    imessage
  elif [ $input5 = 7 ]; then
    stress
+  fi
+ done
+}
+
+options2(){
+  while true; do
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo ""
+  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo ""
+  printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo "                                    Options (2/2)"
+  echo "                                    -------"
+  echo "                                 1) Undervolt"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press w for previous page"
+  echo "press q to go back"
+  echo ""
+  read -p "> " input51
+  if [ $input51 = "q" ]; then
+   mainmenu
+ elif [ $input51 = "w" ]; then
+   options
+ elif [ $input51 = 1 ]; then
+   undervolt
+ fi
+ done
+}
+
+undervolt(){
+  while true; do
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo ""
+  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo ""
+  printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo "                                  Undervolt"
+  echo "                                  ---------"
+  echo ""
+  echo "                            1) Load VoltageShift.kext"
+  echo "                            2) Voltage Info"
+  echo "                            3) Undervolt Settings"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " input5a
+  if [ $input5a = "q" ]; then
+   options2
+ elif [ $input5a = 1 ]; then
+   undervolt1
+ elif [ $input5a = 2 ]; then
+   undervolt2
+ elif [ $input5a = 3 ]; then
+   undervolt3
+ fi
+ done
+}
+
+undervolt1(){
+  while true; do
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo ""
+  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo ""
+  printf "${NC}${normal}"
+  echo ""
+  echo ""
+  echo "                                  Loading Kext"
+  echo "                                  ------------"
+  echo ""
+  echo ""
+  sudo chown -R root:wheel VoltageShift.kext
+  echo ""
+  echo ""
+  echo "                    Successfully loaded VoltageShift.kext"
+  echo ""
+  echo ""
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " input5b
+  if [ $input5b = "q" ]; then
+   undervolt
+  fi
+ done
+}
+
+undervolt3(){
+  cpucoreoffset=0
+  cpucacheoffset=0
+  gpuoffset=0
+  saoffset=0
+  aiooffset=0
+  diooffset=0
+  while true; do
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo ""
+  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo ""
+  printf "${NC}${normal}"
+  echo ""
+  echo "                               Undervolt Settings"
+  echo "                               ------------------"
+  echo "                             Change voltage offsets"
+  echo ""
+  echo "                                 1) CPU Core"
+  echo "                                 2) CPU Cache"
+  echo "                                 3) GPU"
+  echo "                                 4) System Agency"
+  echo "                                 5) Analog I/O"
+  echo "                                 6) Digital I/O"
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " input5c
+  if [ $input5c = "q" ]; then
+   undervolt
+ elif [ $input5c = 1 ]; then
+   while true; do
+   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+   printf "$color"
+   echo "                                                                      $version"
+   echo ""
+   echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+   echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+   echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+   echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+   echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+   echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+   echo ""
+   printf "${NC}${normal}"
+   echo ""
+   echo "                               CPU Core Offset"
+   echo "                               ---------------"
+   echo "                            Change CPU Core offsets"
+   echo ""
+   echo "                           Input your desired offset"
+   echo ""
+   echo "                                   ex. -80"
+   echo ""
+   echo ""
+   echo ""
+   echo ""
+   echo "press q to go back"
+   echo ""
+   read -p "> " input5c1
+   cpucoreoffset=$input5c1
+   if [ $input5c1 = "q" ]; then
+     undervolt3
+   else
+     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+     printf "$color"
+     echo "                                                                      $version"
+     echo ""
+     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+     echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+     echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+     echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+     echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+     echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+     printf "${NC}${normal}"
+     echo ""
+     echo "                               CPU Core Offset"
+     echo "                               ---------------"
+     ./voltageshift offset $cpucoreoffset
+     echo ""
+     echo "                      CPU Core offset changed to $cpucoreoffset mV"
+     echo ""
+     echo "press q to go back"
+     echo ""
+     read -p "> " input5c1a
+     if [ $input5c1a = "q" ]; then
+       undervolt3
+     fi
+   fi
+   done
+ elif [ $input5c = 2 ]; then
+   while true; do
+   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+   printf "$color"
+   echo "                                                                      $version"
+   echo ""
+   echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+   echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+   echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+   echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+   echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+   echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+   echo ""
+   printf "${NC}${normal}"
+   echo ""
+   echo "                               CPU Cache Offset"
+   echo "                               ----------------"
+   echo "                            Change CPU Cache offsets"
+   echo ""
+   echo "                           Input your desired offset"
+   echo ""
+   echo "                                   ex. -80"
+   echo ""
+   echo ""
+   echo ""
+   echo ""
+   echo "press q to go back"
+   echo ""
+   read -p "> " input5c2
+   cpucacheoffset=$input5c2
+   if [ $input5c2 = "q" ]; then
+     undervolt3
+   else
+     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+     printf "$color"
+     echo "                                                                      $version"
+     echo ""
+     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+     echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+     echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+     echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+     echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+     echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+     printf "${NC}${normal}"
+     echo ""
+     echo "                               CPU Cache Offset"
+     echo "                               ---------------"
+     ./voltageshift offset - - $cpucacheoffset
+     echo ""
+     echo "                      CPU Cache offset changed to $cpucacheoffset mV"
+     echo ""
+     echo "press q to go back"
+     echo ""
+     read -p "> " input5c2a
+     if [ $input5c2a = "q" ]; then
+       undervolt3
+     fi
+   fi
+   done
+ elif [ $input5c = 3 ]; then
+   while true; do
+   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+   printf "$color"
+   echo "                                                                      $version"
+   echo ""
+   echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+   echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+   echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+   echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+   echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+   echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+   echo ""
+   printf "${NC}${normal}"
+   echo ""
+   echo "                                 GPU Offset"
+   echo "                                 ----------"
+   echo "                             Change GPU offsets"
+   echo ""
+   echo "                          Input your desired offset"
+   echo ""
+   echo "                                   ex. -80"
+   echo ""
+   echo ""
+   echo ""
+   echo ""
+   echo "press q to go back"
+   echo ""
+   read -p "> " input5c3
+   gpuoffset=$input5c3
+   if [ $input5c3 = "q" ]; then
+     undervolt3
+   else
+     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+     printf "$color"
+     echo "                                                                      $version"
+     echo ""
+     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+     echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+     echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+     echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+     echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+     echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+     printf "${NC}${normal}"
+     echo ""
+     echo "                                 GPU Offset"
+     echo "                                 ----------"
+     ./voltageshift offset - $gpuoffset
+     echo ""
+     echo "                     GPU offset changed to $gpuoffset mV"
+     echo ""
+     echo "press q to go back"
+     echo ""
+     read -p "> " input5c3a
+     if [ $input5c3a = "q" ]; then
+       undervolt3
+     fi
+   fi
+   done
+ elif [ $input5c = 4 ]; then
+   while true; do
+   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+   printf "$color"
+   echo "                                                                      $version"
+   echo ""
+   echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+   echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+   echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+   echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+   echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+   echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+   echo ""
+   printf "${NC}${normal}"
+   echo ""
+   echo "                              System Agent Offset"
+   echo "                              -------------------"
+   echo "                          Change System Agent offsets"
+   echo ""
+   echo "                          Input your desired offset"
+   echo ""
+   echo "                                   ex. -20"
+   echo ""
+   echo ""
+   echo ""
+   echo ""
+   echo "press q to go back"
+   echo ""
+   read -p "> " input5c4
+   saoffset=$input5c4
+   if [ $input5c4 = "q" ]; then
+     undervolt3
+   else
+     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+     printf "$color"
+     echo "                                                                      $version"
+     echo ""
+     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+     echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+     echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+     echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+     echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+     echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+     printf "${NC}${normal}"
+     echo ""
+     echo "                                 System Agent Offset"
+     echo "                                 -------------------"
+     ./voltageshift offset - - - $saoffset
+     echo ""
+     echo "                     System Agent offset changed to $saoffset mV"
+     echo ""
+     echo "press q to go back"
+     echo ""
+     read -p "> " input5c4a
+     if [ $input5c4a = "q" ]; then
+       undervolt3
+     fi
+   fi
+   done
+ elif [ $input5c = 5 ]; then
+   while true; do
+   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+   printf "$color"
+   echo "                                                                      $version"
+   echo ""
+   echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+   echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+   echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+   echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+   echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+   echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+   echo ""
+   printf "${NC}${normal}"
+   echo ""
+   echo "                              Analog I/O Offset"
+   echo "                              -----------------"
+   echo "                          Change Analog I/O offsets"
+   echo ""
+   echo "                          Input your desired offset"
+   echo ""
+   echo "                                   ex. -20"
+   echo ""
+   echo ""
+   echo ""
+   echo ""
+   echo "press q to go back"
+   echo ""
+   read -p "> " input5c5
+   aiooffset=$input5c5
+   if [ $input5c5 = "q" ]; then
+     undervolt3
+   else
+     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+     printf "$color"
+     echo "                                                                      $version"
+     echo ""
+     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+     echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+     echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+     echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+     echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+     echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+     printf "${NC}${normal}"
+     echo ""
+     echo "                              Analog I/O Offset"
+     echo "                              -----------------"
+     ./voltageshift offset - - - - $aiooffset
+     echo ""
+     echo "                   Analog I/O offset changed to $aiooffset mV"
+     echo ""
+     echo "press q to go back"
+     echo ""
+     read -p "> " input5c5a
+     if [ $input5c5a = "q" ]; then
+       undervolt3
+     fi
+   fi
+   done
+ elif [ $input5c = 6 ]; then
+   while true; do
+   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+   printf "$color"
+   echo "                                                                      $version"
+   echo ""
+   echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+   echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+   echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+   echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+   echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+   echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+   echo ""
+   printf "${NC}${normal}"
+   echo ""
+   echo "                              Digital I/O Offset"
+   echo "                              ------------------"
+   echo "                          Change Digital I/O offsets"
+   echo ""
+   echo "                          Input your desired offset"
+   echo ""
+   echo "                                   ex. -20"
+   echo ""
+   echo ""
+   echo ""
+   echo ""
+   echo "press q to go back"
+   echo ""
+   read -p "> " input5c6
+   diooffset=$input5c6
+   if [ $input5c6 = "q" ]; then
+     undervolt3
+   else
+     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+     printf "$color"
+     echo "                                                                      $version"
+     echo ""
+     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+     echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+     echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+     echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+     echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+     echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+     printf "${NC}${normal}"
+     echo ""
+     echo "                              Digital I/O Offset"
+     echo "                              ------------------"
+     ./voltageshift offset - - - - - $diooffset
+     echo ""
+     echo "                   Digital I/O offset changed to $diooffset mV"
+     echo ""
+     echo "press q to go back"
+     echo ""
+     read -p "> " input5c6a
+     if [ $input5c6a = "q" ]; then
+       undervolt3
+     fi
+   fi
+   done
+  fi
+ done
+}
+
+undervolt2(){
+  while true; do
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo ""
+  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
+  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
+  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
+  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
+  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
+  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  printf "${NC}${normal}"
+  ./voltageshift info
+  echo ""
+  echo "press q to go back"
+  echo ""
+  read -p "> " input5d
+  if [ $input5d = "q" ]; then
+   undervolt
   fi
  done
 }
