@@ -123,7 +123,7 @@ sata="${sata//\/ \$}"
 sata="${sata%,*}"
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting MacOS version\n"
 OS=$(sw_vers -productVersion)
-if [ $OS == "10.14.0" ] || [ $OS == "10.14.1" ] || [ $OS == "10.14.2" ] || [ $OS == "10.14.3" ] || [ $OS == "10.14.4" ]; then
+if [ $OS == "10.14.0" ] || [ $OS == "10.14.1" ] || [ $OS == "10.14.2" ] || [ $OS == "10.14.3" ] || [ $OS == "10.14.4" ] || [ $OS == "10.14.5" ]; then
   name="(Mojave)"
 elif [ $OS == "10.13.0" ] || [ $OS == "10.13.1" ] || [ $OS == "10.13.2" ] || [ $OS == "10.13.3" ] || [ $OS == "10.13.4" ] || [ $OS == "10.13.5" ] || [ $OS == "10.13.6" ]; then
   name="(High Sierra)"
