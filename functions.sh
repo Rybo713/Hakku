@@ -1,8 +1,8 @@
-#!/bin/bash
+#!usr/local/bin/bash
 #
 # Hakku2 Functions: A totally reworked command line utility which shows the user
 #             their system info and a bunch of useful tools and tweaks.
-#                   Built using Bash version 3.2.57(1)-release
+#                   Built using Bash version 5.0.7(1)-release
 #
 # The MIT License (MIT)
 #
@@ -75,7 +75,8 @@ else
   echo "Curl should be installed with macOS"
   exit 0
 fi
-
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Bash version\n"
+bashv=$BASH_VERSION
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Model info\n"
 if [[ "$(kextstat | grep -F -e "FakeSMC" -e "VirtualSMC")" != "" ]]; then
                 model="Hackintosh ($(sysctl -n hw.model))"
@@ -214,7 +215,6 @@ systeminfo(){
  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
  printf "$color"
  echo "                                                                      $version"
- echo ""
  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
@@ -222,6 +222,8 @@ systeminfo(){
  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
  printf "${NC}${normal}"
+ printf "${CYAN}${bold}Bash Version: ${NC}${normal}"
+ echo "$bashv"
  printf "${CYAN}${bold}CPU Info: ${NC}${normal}"
  echo "$cpu"
  printf "${CYAN}${bold}GPU Info: ${NC}${normal}"

@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/local/bin/bash
 #
 # Hakku2 Update Functions: A totally reworked command line utility which shows
 #                            the user their system info and a bunch of useful
 #                                           tools and tweaks.
-#                               Built using Bash version 3.2.57(1)-release
+#                               Built using Bash version 5.0.7(1)-release
 #
 # The MIT License (MIT)
 #
@@ -122,7 +122,7 @@ check(){
   echo ""
   update="$(curl --silent "https://api.github.com/repos/Rybo713/Hakku/tags" | jq -r '.[0].name')"
   echo ""
-  if [ $update = "v2.1.1-beta" ]; then
+  if [ $update = "v2.2.0-beta" ]; then
     updating="No new updates"
     printf "${GREEN}${bold}                             No new updates${NC}${normal}\n"
     noti=""

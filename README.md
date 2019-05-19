@@ -23,7 +23,7 @@ A command-line utility which shows the user their system info and a bunch of use
   7b) For settings press t
   8) From now on you can update to new releases using the script
 
-## Instructions for Hakku2 v2.0-alpha1
+## Instructions for Hakku2 v2.0-alpha1 and above
 
   1) Go to Releases and download the latest version.
   2) Extract zip file

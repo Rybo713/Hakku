@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/local/bin/bash
 #
 # Hakku2 Tweaks Functions: A totally reworked command line utility which shows
 #                           the user their system info and a bunch of useful
 #                                          tools and tweaks.
-#                              Built using Bash version 3.2.57(1)-release
+#                              Built using Bash version 5.0.7(1)-release
 #
 # The MIT License (MIT)
 #

@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/local/bin/bash
 #
 # Hakku2: A totally reworked command line utility which shows the user
 #             their system info and a bunch of useful tools and tweaks.
-#                   Built using Bash version 3.2.57(1)-release
+#                   Built using Bash version 5.0.7(1)-release
 #
 # The MIT License (MIT)
 #
@@ -37,8 +37,8 @@ LYELLOW='\033[1;33m'
 bold=$(tput bold)
 normal=$(tput sgr0)
 
-version="v2.1.1beta"
-build="build-20190515"
+version="v2.2.0beta"
+build="build-20190519"
 updating="Please check for updates."
 color="${YELLOW}${bold}"
 
