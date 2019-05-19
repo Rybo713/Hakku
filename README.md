@@ -9,6 +9,7 @@ A command-line utility which shows the user their system info and a bunch of use
   - jq
   - wget
   - curl
+  - bash 5.0
 
 ## Instructions for Hakku v1.0-1.9beta
 
@@ -24,7 +25,8 @@ A command-line utility which shows the user their system info and a bunch of use
   8) From now on you can update to new releases using the script
 
 ## Instructions for Hakku2 v2.0-alpha1 and above
-
+  0) Make sure you have the latest bash 5.0 installed and made it the default shell.
+    - If not, follow this guide: https://itnext.io/upgrading-bash-on-macos-7138bd1066ba
   1) Go to Releases and download the latest version.
   2) Extract zip file
   3) Open terminal and type `cd "location of extracted folder"`

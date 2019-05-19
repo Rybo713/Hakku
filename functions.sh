@@ -46,35 +46,46 @@ printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking system if it meets requirem
 
 if
 command -v brew > /dev/null ; then
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}HomeBrew package is installed\n"
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}HomeBrew is installed\n"
 else
-  printf "${RED}${bold}[ERROR] ${NC}${normal}HomeBrew package is not installed\n"
+  printf "${RED}${bold}[ERROR] ${NC}${normal}HomeBrew is not installed\n"
+  exit 0
+fi
+
+if
+command -v bash > /dev/null ; then
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}bash 5.0 is installed\n"
+else
+  printf "${RED}${bold}[ERROR] ${NC}${normal}bash 5.0 is not installed\n"
+  echo "Install bash 5.0 with 'brew install bash'"
+  echo "Follow the instructions on Github to link it"
   exit 0
 fi
 
 if command -v jq > /dev/null ; then
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}jq package is installed\n"
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}jq is installed\n"
 else
-  printf "${RED}${bold}[ERROR] ${NC}${normal}jq package is not installed\n"
+  printf "${RED}${bold}[ERROR] ${NC}${normal}jq is not installed\n"
   echo "Install jq with 'brew install jq'"
   exit 0
 fi
 
 if command -v wget > /dev/null ; then
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}wget package is installed\n"
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}wget is installed\n"
 else
-  printf "${RED}${bold}[ERROR] ${NC}${normal}wget package is not installed\n"
+  printf "${RED}${bold}[ERROR] ${NC}${normal}wget is not installed\n"
   echo "Install wget with 'brew install wget'"
   exit 0
 fi
 
 if command -v curl > /dev/null ; then
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}curl package is installed\n"
+  printf "${GREEN}${bold}[INFO] ${NC}${normal}curl is installed\n"
 else
-  printf "${RED}${bold}[ERROR] ${NC}${normal}curl package is not installed\n"
+  printf "${RED}${bold}[ERROR] ${NC}${normal}curl is not installed\n"
   echo "Curl should be installed with macOS"
   exit 0
 fi
+
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Bash version\n"
 bashv=$BASH_VERSION
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Model info\n"
