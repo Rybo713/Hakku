@@ -42,10 +42,10 @@ elif [[ $EUID -ne 1 ]]; then
   echo ""
 fi
 
-printf "${GREEN}${bold}[INFO] ${NC}${normal}Settings Permissions...\n"
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Setting Permissions...\n"
 sudo chmod +x ./Hakku2.sh
 sudo chmod +x ./functions.sh
 sudo chmod +x ./settings_f.sh
 sudo chmod +x ./update_f.sh
 sudo chmod +x ./tweaks_f.sh
-printf "${GREEN}${bold}[INFO] ${NC}${normal}Finished settings permissions!\n"
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Finished setting permissions!\n"
