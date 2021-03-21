@@ -1,12 +1,12 @@
-#!usr/local/bin/bash
+#!bin/bash
 #
 # Hakku2 Functions: A totally reworked command line utility which shows the user
 #             their system info and a bunch of useful tools and tweaks.
-#                   Built using Bash version 5.0.7(1)-release
+#                   Built using Bash version 3.2.57(1)-release
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2019 Ryan Wong
+# Copyright (c) 2021 Ryan Wong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -49,16 +49,6 @@ command -v brew > /dev/null ; then
   printf "${GREEN}${bold}[INFO] ${NC}${normal}HomeBrew is installed\n"
 else
   printf "${RED}${bold}[ERROR] ${NC}${normal}HomeBrew is not installed\n"
-  exit 0
-fi
-
-if
-command -v bash > /dev/null ; then
-  printf "${GREEN}${bold}[INFO] ${NC}${normal}bash 5.0 is installed\n"
-else
-  printf "${RED}${bold}[ERROR] ${NC}${normal}bash 5.0 is not installed\n"
-  echo "Install bash 5.0 with 'brew install bash'"
-  echo "Follow the instructions on Github to link it"
   exit 0
 fi
 
@@ -141,6 +131,12 @@ elif [ $OS == "10.13.0" ] || [ $OS == "10.13.1" ] || [ $OS == "10.13.2" ] || [ $
   name="(High Sierra)"
 elif [ $OS == "10.12.0" ] || [ $OS == "10.12.1" ] || [ $OS == "10.12.2" ] || [ $OS == "10.12.3" ] || [ $OS == "10.12.4" ] || [ $OS == "10.12.5" ] || [ $OS == "10.12.6" ]; then
   name="(Sierra)"
+elif [ $OS == "10.15" ] || [ $OS == "10.15.1" ] || [ $OS == "10.15.2" ] || [ $OS == "10.15.3" ] || [ $OS == "10.15.4" ] || [ $OS == "10.15.5" ] || [ $OS == "10.15.6" ] || [ $OS == "10.15.7"]; then
+  name="(Catalina)"
+elif [ $OS == "11.0" ] || [ $OS == "11.0.1" ] || [ $OS == "11.1" ] || [ $OS == "11.2" ] || [ $OS == "11.2.1" ] || [ $OS == "11.2.2" ] || [ $OS == "11.2.3" ]; then
+  name="(Big Sur)"
+elif [ $OS == "11.3" ]; then
+  name="(Big Sur Beta)"
 else
   name="(Unknown)"
 fi
@@ -317,6 +313,7 @@ goodbye(){
   read -p "> " in
 
   if [ $in = "y" ] || [ $in = "Y" ]; then
+    clear
     exit 0
   elif [ $in = "n" ] || [ $in = "N" ]; then
     mainmenu

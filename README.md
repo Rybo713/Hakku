@@ -1,5 +1,5 @@
 # Hakku
-A command-line utility which shows the user their system info and a bunch of useful tools and tweaks.
+A command-line utility which shows the user their system info and a bunch of useful tools and tweaks for macOS.
 
 <img src="https://i.imgur.com/SUDUa2r.png" alt="HackTool" align="left" height="520px">
 
@@ -9,7 +9,6 @@ A command-line utility which shows the user their system info and a bunch of use
   - jq
   - wget
   - curl
-  - bash 5.0
 
 ## Instructions for Hakku v1.0-1.9beta
 
@@ -25,15 +24,13 @@ A command-line utility which shows the user their system info and a bunch of use
   8) From now on you can update to new releases using the script
 
 ## Instructions for Hakku2 v2.0-alpha1 and above
-  0) Make sure you have the latest bash 5.0 installed and made it the default shell.
-    - If not, follow this guide: https://itnext.io/upgrading-bash-on-macos-7138bd1066ba
-  1) Go to Releases and download the latest version.
-  2) Extract zip file
-  3) Open terminal and type `cd "location of extracted folder"`
-  4) In terminal type `sudo chmod +x ./perm.sh`
-  5) Then type `sudo ./perm.sh`
-  6) After that type `sudo ./Hakku2.sh`
-  7) From now on you can update to new releases using the script
+  0) Go to Releases and download the latest version.
+  1) Extract zip file
+  2) Open terminal and type `cd "location of extracted folder"`
+  3) In terminal type `sudo chmod +x ./perm.sh`
+  4) Then type `sudo ./perm.sh`
+  5) After that type `sudo ./Hakku2.sh`
+  6) From now on you can update to new releases using the script
 
 ## Credits
 Ryan Wong
