@@ -37,8 +37,8 @@ LYELLOW='\033[1;33m'
 bold=$(tput bold)
 normal=$(tput sgr0)
 
-version="v2.3.0beta"
-build="build-20210321"
+version="v2.3.1beta"
+build="build-20210325"
 updating="Please check for updates."
 color="${YELLOW}${bold}"
 

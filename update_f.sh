@@ -122,7 +122,7 @@ check(){
   echo ""
   update="$(curl --silent "https://api.github.com/repos/Rybo713/Hakku/tags" | jq -r '.[0].name')"
   echo ""
-  if [ $update = "v2.2.0-beta" ]; then
+  if [ $update = "v2.3.1-beta" ]; then
     updating="No new updates"
     printf "${GREEN}${bold}                             No new updates${NC}${normal}\n"
     noti=""
