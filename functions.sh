@@ -1084,9 +1084,7 @@ efi(){
         echo "                                  ------------"
         echo ""
         echo ""
-        mkdir "/Volumes/EFI"
-        sudo mount -t msdos /dev/disk0s1 "/Volumes/EFI"
-        open "/Volumes/EFI"
+        sudo diskutil mount disk0s1
         echo ""
         echo ""
         echo ""
@@ -1116,9 +1114,7 @@ efi(){
         echo "                                  ------------"
         echo ""
         echo ""
-        mkdir "/Volumes/EFI2"
-        sudo mount -t msdos /dev/disk1s1 "/Volumes/EFI2"
-        open "/Volumes/EFI2"
+        sudo diskutil mount disk1s1
         echo ""
         echo ""
         echo ""
