@@ -1,6 +1,5 @@
-#!bin/bash
 #
-# Hakku2 Functions: A totally reworked command line utility which shows the user
+# Hakku3 Functions: A totally reworked command line utility which shows the user
 #             their system info and a bunch of useful tools and tweaks.
 #                   Built using Bash version 3.2.57(1)-release
 #
@@ -26,21 +25,79 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+function select_option {
+
+    # little helpers for terminal print control and key input
+    ESC=$( printf "\033")
+    cursor_blink_on()  { printf "$ESC[?25h"; }
+    cursor_blink_off() { printf "$ESC[?25l"; }
+    cursor_to()        { printf "$ESC[$1;${2:-1}H"; }
+    print_option()     { printf "   $1 "; }
+    print_selected()   { printf "  $ESC[7m $1 $ESC[27m"; }
+    get_cursor_row()   { IFS=';' read -sdR -p $'\E[6n' ROW COL; echo ${ROW#*[}; }
+    key_input()        { read -s -n3 key 2>/dev/null >&2
+                         if [[ $key = $ESC[A ]]; then echo up;    fi
+                         if [[ $key = $ESC[B ]]; then echo down;  fi
+                         if [[ $key = ""     ]]; then echo enter; fi; }
+
+    # initially print empty new lines (scroll down if at bottom of screen)
+    for opt; do printf "\n"; done
+
+    # determine current screen position for overwriting the options
+    local lastrow=`get_cursor_row`
+    local startrow=$(($lastrow - $#))
+
+    # ensure cursor and input echoing back on upon a ctrl+c during read -s
+    trap "cursor_blink_on; stty echo; printf '\n'; exit" 2
+    cursor_blink_off
+
+    local selected=0
+    while true; do
+        # print options by overwriting the last lines
+        local idx=0
+        for opt; do
+            cursor_to $(($startrow + $idx))
+            if [ $idx -eq $selected ]; then
+                print_selected "$opt"
+            else
+                print_option "$opt"
+            fi
+            ((idx++))
+        done
+
+        # user key control
+        case `key_input` in
+            enter) break;;
+            up)    ((selected--));
+                   if [ $selected -lt 0 ]; then selected=$(($# - 1)); fi;;
+            down)  ((selected++));
+                   if [ $selected -ge $# ]; then selected=0; fi;;
+        esac
+    done
+
+    # cursor position back to normal
+    cursor_to $lastrow
+    printf "\n"
+    cursor_blink_on
+
+    return $selected
+}
+
 # Clear Console
 clear
 
 # Loading Screen
 refresh(){
+
+printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking if script is running as root"
+
 if [[ $EUID -ne 0 ]]; then
-  printf "${RED}${bold}[ERROR] ${NC}${normal}This script must be run as root\n"
+  printf "${RED}${bold}[ERROR] ${NC}${normal}This script must be run as root!\n"
   exit 1
 elif [[ $EUID -ne 1 ]]; then
   echo ""
 fi
 
-/usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-
-printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking if script is running as root\n"
 printf "${GREEN}${bold}[INFO] ${NC}${normal}This script is running as root\n"
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking system if it meets requirements\n"
 
@@ -55,6 +112,7 @@ fi
 if command -v jq > /dev/null ; then
   printf "${GREEN}${bold}[INFO] ${NC}${normal}jq is installed\n"
 else
+
   printf "${RED}${bold}[ERROR] ${NC}${normal}jq is not installed\n"
   echo "Install jq with 'brew install jq'"
   exit 0
@@ -78,28 +136,34 @@ fi
 
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Bash version\n"
 bashv=$BASH_VERSION
+
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Model info\n"
-if [[ "$(kextstat | grep -F -e "FakeSMC" -e "VirtualSMC")" != "" ]]; then
+if [[ "$(kmutil showloaded --variant-suffix release | grep -F -e "FakeSMC" -e "VirtualSMC")" != "" ]]; then
                 model="Hackintosh ($(sysctl -n hw.model))"
                 printf "${GREEN}${bold}[INFO] ${NC}${normal}System is a Hackintosh\n"
               else
                 model="$(sysctl -n hw.model)"
                 printf "${GREEN}${bold}[INFO] ${NC}${normal}System is a real Mac\n"
               fi
+
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting CPU info\n"
 cpu=$(sysctl -n machdep.cpu.brand_string)
+
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting GPU info\n"
 gpu="$(system_profiler SPDisplaysDataType |\
                        awk -F': ' '/^\ *Chipset Model:/ {printf $2 ", "}')"
 gpu="${gpu//\/ \$}"
 gpu="${gpu%,*}"
+
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting RAM info\n"
 ram="$(system_profiler SPHardwareDataType |\
                        awk -F': ' '/^\ *Memory:/ {printf $2 ", "}')"
 ram="${ram//\/ \$}"
 ram="${ram%,*}"
+
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Kernel info\n"
 kernel=$(uname -r)
+
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Battery info\n"
 batt=$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)
 if [ "$batt" -le "20" ]; then
@@ -110,11 +174,13 @@ else
   printf ""
 fi
 battcon=$(system_profiler SPPowerDataType | grep "Condition" | awk '{print $2}')
+
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting Disk info\n"
 dtype="$(diskutil info / |\
                        awk -F': ' '/^\ *File System Personality:/ {printf $2 ", "}')"
 dtype="${dtype//\/ \$}"
 dtype="${dtype%,*}"
+
 nvme="$(system_profiler SPNVMeDataType |\
                        awk -F': ' '/^\ *Model:/ {printf $2 ", "}')"
 nvme="${nvme//\/ \$}"
@@ -123,6 +189,7 @@ sata="$(system_profiler SPSerialATADataType |\
                        awk -F': ' '/^\ *Model:/ {printf $2 ", "}')"
 sata="${sata//\/ \$}"
 sata="${sata%,*}"
+
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Getting MacOS version\n"
 OS=$(sw_vers -productVersion)
 if [ $OS == "10.14.0" ] || [ $OS == "10.14.1" ] || [ $OS == "10.14.2" ] || [ $OS == "10.14.3" ] || [ $OS == "10.14.4" ] || [ $OS == "10.14.5" ]; then
@@ -143,6 +210,7 @@ fi
 
 check=0
 check1=0
+check2=0
 
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking for Settings Extension\n"
 if [ -e settings_f.sh ]; then
@@ -150,6 +218,7 @@ if [ -e settings_f.sh ]; then
 else
   check=1
   printf "${RED}${bold}[ERROR] ${NC}${normal}Failed to find Settings Extension\n"
+  exit 0
 fi
 
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking for Tweaks Extension\n"
@@ -158,18 +227,20 @@ if [ -e tweaks_f.sh ]; then
 else
   check1=1
   printf "${RED}${bold}[ERROR] ${NC}${normal}Failed to find Tweaks Extension\n"
+  exit 0
 fi
 
 printf "${GREEN}${bold}[INFO] ${NC}${normal}Checking for Update Extension\n"
 if [ -e update_f.sh ]; then
   printf "${GREEN}${bold}[INFO] ${NC}${normal}Found Update Extension\n"
 else
-  check1=1
+  check2=1
   printf "${RED}${bold}[ERROR] ${NC}${normal}Failed to find Update Extension\n"
+  exit 0
 fi
 
 echo ""
-echo "                           Loading..."
+echo "                               Loading..."
 sleep 1
 mainmenu
 }
@@ -179,39 +250,39 @@ mainmenu(){
   while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
-  echo "? for help                                                            $version"
-  echo "$build"
+  echo "$build                                                        $version"
   echo ""
   echo ""
   echo ""
   echo ""
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo ""
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
   echo "                                 Ryan Wong 2021"
   echo ""
   echo ""
   echo ""
   echo ""
-  printf "${NC}${normal}                         1) Start           Q) Exit"
+  printf "${NC}${normal}"
   echo ""
-  echo ""
-  echo ""
-  echo ""
-  read -p "> " input
+  options=("Start" "Exit" "Help")
 
-  if [ $input = 1 ]; then
-    systeminfo
-  elif [ $input = "Q" ] || [ $input = "q" ]; then
-    goodbye
-  elif [ $input = "?" ]; then
-    help
-  fi
+  select_option "${options[@]}"
+  choice=$?
+
+  if [ $choice = "0" ]; then
+   systeminfo
+ elif [ $choice = "1" ]; then
+   goodbye
+ elif [ $choice = "2" ]; then
+   help
+ fi
 
 done
 }
@@ -222,12 +293,12 @@ systeminfo(){
  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
  printf "$color"
  echo "                                                                      $version"
- echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
- echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
- echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
- echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
- echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
- echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+ echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+ echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+ echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+ echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+ echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+ echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
  printf "${NC}${normal}"
  printf "${CYAN}${bold}Bash Version: ${NC}${normal}"
  echo "$bashv"
@@ -250,36 +321,69 @@ systeminfo(){
  printf "${CYAN}${bold}Battery Info: ${NC}${normal}"
  echo "Percentage: $batt%"
  printf "${RED}${bold}              $low ${NC}${normal}\n"
- printf "${GREEN}${bold}              $full ${NC}${normal}\n"
  printf "              Condition : $battcon\n"
- echo ""
- echo "press q to go back"
- read -p "> " in2
 
- if [ $in2 = "options" ]; then
+ options=("Menu" "Exit" "Help")
+
+ select_option "${options[@]}"
+ choice1=$?
+
+ if [ $choice1 = "0" ]; then
+   menus
+ elif [ $choice1 = "1" ]; then
+   goodbye
+ elif [ $choice2 = "2" ]; then
+   help
+ fi
+done
+}
+
+# New Menu
+menus(){
+  while true; do
+ /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+ printf "$color"
+ echo "                                                                      $version"
+ echo ""
+ echo ""
+ echo ""
+ echo ""
+ echo ""
+ echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+ echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+ echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+ echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+ echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+ echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
+ echo ""
+ printf "${NC}${normal}"
+ echo ""
+ options=("Options" "Help" "Info" "Tweaks" "Update $noti" "System Info" "Settings" "Exit")
+
+ select_option "${options[@]}"
+ choice2=$?
+
+ if [ $choice2 = "0" ]; then
   options
- elif [ $in2 = "?" ]; then
+ elif [ $choice2 = "1" ]; then
   help
- elif [ $in2 = "info" ]; then
+ elif [ $choice2 = "2" ]; then
   info
- elif [ $in2 = "tweaks" ]; then
+ elif [ $choice2 = "3" ]; then
   . ./tweaks_f.sh
   risk
- elif [ $in2 = "exit" ]; then
+ elif [ $choice2 = "7" ]; then
   goodbye
- elif [ $in2 = "q" ]; then
-  mainmenu
- elif [ $in2 = "update" ]; then
+ elif [ $choice2 = "4" ]; then
   . ./update_f.sh
   update
- elif [ $in2 = "refresh" ]; then
-  refresh
-  systeminfo
- elif [ $in2 = "settings" ]; then
+ elif [ $choice2 = "5" ]; then
+  $start
+ elif [ $choice2 = "6" ]; then
   . ./settings_f.sh
   settings
  fi
- done
+done
 }
 
 # exits program
@@ -293,12 +397,12 @@ goodbye(){
   echo ""
   echo ""
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
   echo ""
   echo ""
@@ -306,17 +410,19 @@ goodbye(){
   echo ""
   echo ""
   printf "${NC}${normal}                                 Are you sure?\n"
-  echo "                                     (Y/N) "
   echo ""
   echo ""
-  echo ""
-  read -p "> " in
 
-  if [ $in = "y" ] || [ $in = "Y" ]; then
+  options=("Yes" "No")
+
+  select_option "${options[@]}"
+  choice3=$?
+
+  if [ $choice3 = "0" ]; then
     clear
     exit 0
-  elif [ $in = "n" ] || [ $in = "N" ]; then
-    mainmenu
+  elif [ $choice3 = "1" ]; then
+    menus
   fi
  done
 }
@@ -328,18 +434,18 @@ help(){
   printf "$color"
   echo "                                                                      $version"
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
   printf "${NC}${normal}"
   echo ""
   echo "                                  Hakku Usage"
   echo "                                  -----------"
-  echo "                           refresh | Refresh System Info"
+  echo "                       system info | System Info"
   echo "                           exit    | Exit Program"
   echo "                              ?    | Help Page (This Page)"
   echo "                           options | Options Page"
@@ -348,32 +454,15 @@ help(){
   echo "                           settings| Settings Page"
   printf "                           update  | Check and Update Hakku$noti\n"
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " input3
 
-   if [ $input3 = "options" ]; then
-    options
-  elif [ $input3 = "?" ]; then
-    help
-  elif [ $input3 = "info" ]; then
-    info
-  elif [ $input3 = "tweaks" ]; then
-    . ./tweaks_f.sh
-    risk
-  elif [ $input3 = "exit" ]; then
-    goodbye
-  elif [ $input3 = "refresh" ]; then
-    refresh
-    systeminfo
-  elif [ $input3 = "settings" ]; then
-    . ./settings_f.sh
-    settings
-  elif [ $input3 = "update" ]; then
-    . ./update_f.sh
-    update
-  elif [ $input3 = "q" ]; then
-    mainmenu
+  options=("Menu")
+
+  select_option "${options[@]}"
+  choice4=$?
+
+  if [ $choice4 = "0" ]; then
+    menus
   fi
  done
 }
@@ -385,12 +474,12 @@ info(){
   printf "$color"
   echo "                                                                      $version"
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
   printf "${NC}${normal}"
   echo "                                  Information"
@@ -405,12 +494,15 @@ info(){
   echo ""
   echo "                             Created by Ryan Wong"
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " input4
 
-  if [ $input4 = "q" ]; then
-   mainmenu
+  options=("Back")
+
+  select_option "${options[@]}"
+  choice5=$?
+
+  if [ $choice5 = "0" ]; then
+   menus
   fi
  done
 }
@@ -422,47 +514,43 @@ options(){
   printf "$color"
   echo "                                                                      $version"
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
   printf "${NC}${normal}"
   echo ""
   echo ""
   echo "                                    Options (1/2)"
   echo "                                    -------"
-  echo "                            1) Mount / Unmount EFI"
-  echo "                         2) Enable / Disable Gatekeeper"
-  echo "                            3) Disable Hibernation"
-  echo "                                4) Force Reboot"
-  echo "                               5) Force Shutdown"
-  echo "                    6) Delete iMessage related files/folders"
-  echo "                               7) CPU Stress Test"
-  echo "press e for next page"
-  echo "press q to go back"
   echo ""
-  read -p "> " input5
 
-  if [ $input5 = "q" ]; then
-   mainmenu
- elif [ $input5 = "e" ]; then
+  options=("Mount / Unmount EFI" "Enable / Disable Gatekeeper" "Disable Hibernation"
+  "Force Reboot" "Force Shutdown" "Delete iMessage related files/folders" "CPU Stress Test" "Next Page" "Back")
+
+  select_option "${options[@]}"
+  input5=$?
+
+  if [ $input5 = "8" ]; then
+   menus
+ elif [ $input5 = "7" ]; then
    options2
- elif [ $input5 = 1 ]; then
+ elif [ $input5 = "0" ]; then
    efi
- elif [ $input5 = 2 ]; then
+ elif [ $input5 = "1" ]; then
    gatekeeper
- elif [ $input5 = 3 ]; then
+ elif [ $input5 = "2" ]; then
    hibernation
- elif [ $input5 = 4 ]; then
+ elif [ $input5 = "3" ]; then
    reboot1
- elif [ $input5 = 5 ]; then
+ elif [ $input5 = "4" ]; then
    shutdown1
- elif [ $input5 = 6 ]; then
+ elif [ $input5 = "5" ]; then
    imessage
- elif [ $input5 = 7 ]; then
+ elif [ $input5 = "6" ]; then
    stress
   fi
  done
@@ -474,34 +562,39 @@ options2(){
   printf "$color"
   echo "                                                                      $version"
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
   printf "${NC}${normal}"
   echo ""
   echo ""
   echo "                                    Options (2/2)"
   echo "                                    -------"
-  echo "                                 1) Undervolt"
   echo ""
   echo ""
   echo ""
   echo ""
   echo ""
   echo ""
-  echo "press w for previous page"
-  echo "press q to go back"
   echo ""
-  read -p "> " input51
-  if [ $input51 = "q" ]; then
-   mainmenu
- elif [ $input51 = "w" ]; then
+  echo ""
+  echo ""
+  echo ""
+
+  options=("Undervolt" "Previous Page" "Back")
+
+  select_option "${options[@]}"
+  input51=$?
+
+  if [ $input51 = "2" ]; then
+   menus
+ elif [ $input51 = "1" ]; then
    options
- elif [ $input51 = 1 ]; then
+ elif [ $input51 = "0" ]; then
    undervolt
  fi
  done
@@ -513,12 +606,12 @@ undervolt(){
   printf "$color"
   echo "                                                                      $version"
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
   printf "${NC}${normal}"
   echo ""
@@ -526,24 +619,25 @@ undervolt(){
   echo "                                  Undervolt"
   echo "                                  ---------"
   echo ""
-  echo "                            1) Load VoltageShift.kext v1.25"
-  echo "                            2) Voltage Info"
-  echo "                            3) Undervolt Settings"
   echo ""
   printf "${RED}${bold}"
   echo " NOTE: THIS TOOL IS FOR ADVANCED USERS AND MAY DAMAGE YOUR COMPUTER PERMANENTLY"
   printf "${NC}${normal}"
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " input5a
-  if [ $input5a = "q" ]; then
+
+  options=("Load VoltageShift.kext v1.25" "Voltage Info" "Undervolt Settings" "Back")
+
+  select_option "${options[@]}"
+  input5a=$?
+
+  if [ $input5a = "3" ]; then
    options2
- elif [ $input5a = 1 ]; then
+ elif [ $input5a = "0" ]; then
    undervolt1
- elif [ $input5a = 2 ]; then
+ elif [ $input5a = "1" ]; then
    undervolt2
- elif [ $input5a = 3 ]; then
+ elif [ $input5a = "2" ]; then
    undervolt3
  fi
  done
@@ -555,12 +649,12 @@ undervolt1(){
   printf "$color"
   echo "                                                                      $version"
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
   printf "${NC}${normal}"
   echo ""
@@ -576,10 +670,14 @@ undervolt1(){
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " input5b
-  if [ $input5b = "q" ]; then
+
+  options=("Back")
+
+  select_option "${options[@]}"
+  input5b=$?
+
+  if [ $input5b = "0" ]; then
    undervolt
   fi
  done
@@ -597,12 +695,12 @@ undervolt3(){
   printf "$color"
   echo "                                                                      $version"
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
   printf "${NC}${normal}"
   echo ""
@@ -619,21 +717,26 @@ undervolt3(){
   echo ""
   echo "press q to go back"
   echo ""
-  read -p "> " input5c
-  if [ $input5c = "q" ]; then
+
+  options=("CPU Core" "CPU Cache" "GPU" "System Agency" "Analog I/O" "Digital I/O" "Back")
+
+  select_option "${options[@]}"
+  input5c=$?
+
+  if [ $input5c = "6" ]; then
    undervolt
- elif [ $input5c = 1 ]; then
+ elif [ $input5c = "0" ]; then
    while true; do
    /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
    printf "$color"
    echo "                                                                      $version"
    echo ""
-   echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-   echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-   echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-   echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-   echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-   echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+   echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+   echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+   echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+   echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+   echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+   echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
    echo ""
    printf "${NC}${normal}"
    echo ""
@@ -659,12 +762,12 @@ undervolt3(){
      printf "$color"
      echo "                                                                      $version"
      echo ""
-     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-     echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-     echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-     echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-     echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-     echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+     echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+     echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+     echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+     echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+     echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+     echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
      printf "${NC}${normal}"
      echo ""
      echo "                               CPU Core Offset"
@@ -673,26 +776,29 @@ undervolt3(){
      echo ""
      echo "                      CPU Core offset changed to $cpucoreoffset mV"
      echo ""
-     echo "press q to go back"
      echo ""
-     read -p "> " input5c1a
-     if [ $input5c1a = "q" ]; then
+     options=("Back")
+
+     select_option "${options[@]}"
+     input5c1a=$?
+
+     if [ $input5c1a = "0" ]; then
        undervolt3
      fi
    fi
    done
- elif [ $input5c = 2 ]; then
+ elif [ $input5c = "1" ]; then
    while true; do
    /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
    printf "$color"
    echo "                                                                      $version"
    echo ""
-   echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-   echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-   echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-   echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-   echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-   echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+   echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+   echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+   echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+   echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+   echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+   echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
    echo ""
    printf "${NC}${normal}"
    echo ""
@@ -718,12 +824,12 @@ undervolt3(){
      printf "$color"
      echo "                                                                      $version"
      echo ""
-     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-     echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-     echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-     echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-     echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-     echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+     echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+     echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+     echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+     echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+     echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+     echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
      printf "${NC}${normal}"
      echo ""
      echo "                               CPU Cache Offset"
@@ -732,26 +838,29 @@ undervolt3(){
      echo ""
      echo "                      CPU Cache offset changed to $cpucacheoffset mV"
      echo ""
-     echo "press q to go back"
      echo ""
-     read -p "> " input5c2a
-     if [ $input5c2a = "q" ]; then
+     options=("Back")
+
+     select_option "${options[@]}"
+     input5c2a=$?
+
+     if [ $input5c2a = "0" ]; then
        undervolt3
      fi
    fi
    done
- elif [ $input5c = 3 ]; then
+ elif [ $input5c = "2" ]; then
    while true; do
    /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
    printf "$color"
    echo "                                                                      $version"
    echo ""
-   echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-   echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-   echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-   echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-   echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-   echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+   echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+   echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+   echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+   echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+   echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+   echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
    echo ""
    printf "${NC}${normal}"
    echo ""
@@ -777,12 +886,12 @@ undervolt3(){
      printf "$color"
      echo "                                                                      $version"
      echo ""
-     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-     echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-     echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-     echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-     echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-     echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+     echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+     echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+     echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+     echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+     echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+     echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
      printf "${NC}${normal}"
      echo ""
      echo "                                 GPU Offset"
@@ -791,26 +900,29 @@ undervolt3(){
      echo ""
      echo "                     GPU offset changed to $gpuoffset mV"
      echo ""
-     echo "press q to go back"
      echo ""
-     read -p "> " input5c3a
+     options=("Back")
+
+     select_option "${options[@]}"
+     input5c3a=$?
+
      if [ $input5c3a = "q" ]; then
        undervolt3
      fi
    fi
    done
- elif [ $input5c = 4 ]; then
+ elif [ $input5c = "3" ]; then
    while true; do
    /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
    printf "$color"
    echo "                                                                      $version"
    echo ""
-   echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-   echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-   echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-   echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-   echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-   echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+   echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+   echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+   echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+   echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+   echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+   echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
    echo ""
    printf "${NC}${normal}"
    echo ""
@@ -836,12 +948,12 @@ undervolt3(){
      printf "$color"
      echo "                                                                      $version"
      echo ""
-     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-     echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-     echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-     echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-     echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-     echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+     echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+     echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+     echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+     echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+     echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+     echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
      printf "${NC}${normal}"
      echo ""
      echo "                                 System Agent Offset"
@@ -850,26 +962,29 @@ undervolt3(){
      echo ""
      echo "                     System Agent offset changed to $saoffset mV"
      echo ""
-     echo "press q to go back"
      echo ""
-     read -p "> " input5c4a
-     if [ $input5c4a = "q" ]; then
+     options=("Back")
+
+     select_option "${options[@]}"
+     input5c4a=$?
+
+     if [ $input5c4a = "0" ]; then
        undervolt3
      fi
    fi
    done
- elif [ $input5c = 5 ]; then
+ elif [ $input5c = "4" ]; then
    while true; do
    /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
    printf "$color"
    echo "                                                                      $version"
    echo ""
-   echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-   echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-   echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-   echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-   echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-   echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+   echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+   echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+   echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+   echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+   echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+   echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
    echo ""
    printf "${NC}${normal}"
    echo ""
@@ -895,12 +1010,12 @@ undervolt3(){
      printf "$color"
      echo "                                                                      $version"
      echo ""
-     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-     echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-     echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-     echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-     echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-     echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+     echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+     echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+     echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+     echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+     echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+     echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
      printf "${NC}${normal}"
      echo ""
      echo "                              Analog I/O Offset"
@@ -909,26 +1024,29 @@ undervolt3(){
      echo ""
      echo "                   Analog I/O offset changed to $aiooffset mV"
      echo ""
-     echo "press q to go back"
      echo ""
-     read -p "> " input5c5a
-     if [ $input5c5a = "q" ]; then
+     options=("Back")
+
+     select_option "${options[@]}"
+     input5c5a=$?
+
+     if [ $input5c5a = "0" ]; then
        undervolt3
      fi
    fi
    done
- elif [ $input5c = 6 ]; then
+ elif [ $input5c = "5" ]; then
    while true; do
    /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
    printf "$color"
    echo "                                                                      $version"
    echo ""
-   echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-   echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-   echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-   echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-   echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-   echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+   echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+   echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+   echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+   echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+   echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+   echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
    echo ""
    printf "${NC}${normal}"
    echo ""
@@ -954,12 +1072,12 @@ undervolt3(){
      printf "$color"
      echo "                                                                      $version"
      echo ""
-     echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-     echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-     echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-     echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-     echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-     echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+     echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+     echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+     echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+     echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+     echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+     echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
      printf "${NC}${normal}"
      echo ""
      echo "                              Digital I/O Offset"
@@ -968,10 +1086,13 @@ undervolt3(){
      echo ""
      echo "                   Digital I/O offset changed to $diooffset mV"
      echo ""
-     echo "press q to go back"
      echo ""
-     read -p "> " input5c6a
-     if [ $input5c6a = "q" ]; then
+     options=("Back")
+
+     select_option "${options[@]}"
+     input5c6a=$?
+
+     if [ $input5c6a = "0" ]; then
        undervolt3
      fi
    fi
@@ -986,19 +1107,22 @@ undervolt2(){
   printf "$color"
   echo "                                                                      $version"
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   printf "${NC}${normal}"
   ./voltageshift info
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " input5d
-  if [ $input5d = "q" ]; then
+  options=("Back")
+
+  select_option "${options[@]}"
+  input5d=$?
+
+  if [ $input5d = "0" ]; then
    undervolt
   fi
  done
@@ -1010,12 +1134,12 @@ efi(){
   printf "$color"
   echo "                                                                      $version"
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
   printf "${NC}${normal}"
   echo ""
@@ -1024,28 +1148,28 @@ efi(){
   echo "                             -------------------"
   echo ""
   echo ""
-  echo "                                1) Mount EFI"
-  echo "                               2) Unmount EFI"
   echo ""
   echo ""
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " in3
+  options=("Mount EFI" "Unmount EFI" "Back")
 
-  if [ $in3 = 1 ]; then
+  select_option "${options[@]}"
+  in3=$?
+
+  if [ $in3 = "0" ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
     printf "$color"
     echo "                                                                      $version"
     echo ""
-    echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-    echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-    echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-    echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-    echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-    echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+    echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+    echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+    echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+    echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+    echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+    echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
     echo ""
     printf "${NC}${normal}"
     echo ""
@@ -1071,12 +1195,12 @@ efi(){
         printf "$color"
         echo "                                                                      $version"
         echo ""
-        echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-        echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-        echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-        echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-        echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-        echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+        echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+        echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+        echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+        echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+        echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+        echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
         echo ""
         printf "${NC}${normal}"
         echo ""
@@ -1089,10 +1213,13 @@ efi(){
         echo ""
         echo ""
         echo ""
-        echo "press q to go back"
         echo ""
-        read -p "> " in5
-          if [ $in5 = "q" ]; then
+        options=("Back")
+
+        select_option "${options[@]}"
+        in5=$?
+
+          if [ $in5 = "0" ]; then
             efi
           fi
 
@@ -1101,12 +1228,12 @@ efi(){
         printf "$color"
         echo "                                                                      $version"
         echo ""
-        echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-        echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-        echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-        echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-        echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-        echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+        echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+        echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+        echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+        echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+        echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+        echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
         echo ""
         printf "${NC}${normal}"
         echo ""
@@ -1119,25 +1246,28 @@ efi(){
         echo ""
         echo ""
         echo ""
-        echo "press q to go back"
         echo ""
-        read -p "> " in6
+        options=("Back")
+
+        select_option "${options[@]}"
+        in6=$?
+
           if [ $in6 = "q" ]; then
             efi
           fi
       fi
 
-  elif [ $in3 = 2 ]; then
+  elif [ $in3 = "1" ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
     printf "$color"
     echo "                                                                      $version"
     echo ""
-    echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-    echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-    echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-    echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-    echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-    echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+    echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+    echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+    echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+    echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+    echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+    echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
     echo ""
     printf "${NC}${normal}"
     echo ""
@@ -1164,12 +1294,12 @@ efi(){
         printf "$color"
         echo "                                                                      $version"
         echo ""
-        echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-        echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-        echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-        echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-        echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-        echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+        echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+        echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+        echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+        echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+        echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+        echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
         echo ""
         printf "${NC}${normal}"
         echo ""
@@ -1184,10 +1314,13 @@ efi(){
         echo ""
         echo ""
         echo ""
-        echo "press q to go back"
         echo ""
-        read -p "> " in8
-        if [ $in8 = "q" ]; then
+        options=("Back")
+
+        select_option "${options[@]}"
+        in8=$?
+
+        if [ $in8 = "0" ]; then
           efi
         fi
 
@@ -1196,12 +1329,12 @@ efi(){
         printf "$color"
         echo "                                                                      $version"
         echo ""
-        echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-        echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-        echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-        echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-        echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-        echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+        echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+        echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+        echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+        echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+        echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+        echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
         echo ""
         printf "${NC}${normal}"
         echo ""
@@ -1216,15 +1349,18 @@ efi(){
         echo ""
         echo ""
         echo ""
-        echo "press q to go back"
         echo ""
-        read -p "> " in9
-          if [ $in9 = "q" ]; then
+        options=("Back")
+
+        select_option "${options[@]}"
+        in9=$?
+
+          if [ $in9 = "0" ]; then
             efi
           fi
       fi
 
-  elif [ $in3 = "q" ]; then
+  elif [ $in3 = "2" ]; then
     options
   fi
  done
@@ -1236,12 +1372,12 @@ gatekeeper(){
   printf "$color"
   echo "                                                                      $version"
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
   printf "${NC}${normal}"
   echo ""
@@ -1257,23 +1393,25 @@ gatekeeper(){
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " i
-    if [ $i = 1 ]; then
+  options=("Enable GateKeeper" "Disable GateKeeper" "Back")
+
+  select_option "${options[@]}"
+  i=$?
+
+    if [ $i = "0" ]; then
       /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
       printf "$color"
       echo "                                                                      $version"
       echo ""
-      echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-      echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-      echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-      echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-      echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-      echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+      echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+      echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+      echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+      echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+      echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+      echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
       echo ""
       printf "${NC}${normal}"
-
       echo ""
       echo "                              Enable GateKeeper"
       echo "                              -----------------"
@@ -1286,23 +1424,26 @@ gatekeeper(){
       echo ""
       echo ""
       echo ""
-      echo "press q to go back"
       echo ""
-      read -p "> " ii
-        if [ $ii = "q" ]; then
+      options=("Back")
+
+      select_option "${options[@]}"
+      ii=$?
+
+        if [ $ii = "0" ]; then
           gatekeeper
         fi
-    elif [ $i = 2 ]; then
+    elif [ $i = "1" ]; then
       /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
       printf "$color"
       echo "                                                                      $version"
       echo ""
-      echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-      echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-      echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-      echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-      echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-      echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+      echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+      echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+      echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+      echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+      echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+      echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
       echo ""
       printf "${NC}${normal}"
       echo ""
@@ -1318,13 +1459,16 @@ gatekeeper(){
       echo ""
       echo ""
       echo ""
-      echo "press q to go back"
       echo ""
-      read -p "> " iii
-        if [ $iii = "q" ]; then
+      options=("Back")
+
+      select_option "${options[@]}"
+      iii=$?
+
+        if [ $iii = "0" ]; then
           gatekeeper
         fi
-    elif [ $i = "q" ]; then
+    elif [ $i = "2" ]; then
       options
     fi
   done
@@ -1336,12 +1480,12 @@ hibernation(){
   printf "$color"
   echo "                                                                      $version"
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   printf "${NC}${normal}"
   echo "                           Disabling Hibernation"
   echo "                           ---------------------"
@@ -1353,10 +1497,13 @@ hibernation(){
   echo ""
   echo "                           Hibernation disabled"
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " ii
-    if [ $ii = "q" ]; then
+  options=("Back")
+
+  select_option "${options[@]}"
+  ii=$?
+
+    if [ $ii = "0" ]; then
       options
     fi
   done
@@ -1372,12 +1519,12 @@ reboot1(){
   echo ""
   echo ""
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
   echo ""
   printf "${NC}${normal}\n"
@@ -1385,15 +1532,17 @@ reboot1(){
   echo "                     (Any unsaved progress will be lost)"
   echo ""
   printf "                                Are you sure?\n"
-  echo "                                     (Y/N) "
   echo ""
   echo ""
   echo ""
-  read -p "> " in
+  options=("Yes" "No")
 
-  if [ $in = "y" ] || [ $in = "Y" ]; then
+  select_option "${options[@]}"
+  in=$?
+
+  if [ $in = "0" ]; then
     sudo shutdown -r now
-  elif [ $in = "n" ] || [ $in = "N" ]; then
+  elif [ $in = "1" ]; then
     options
   fi
  done
@@ -1409,12 +1558,12 @@ shutdown1(){
   echo ""
   echo ""
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
   echo ""
   printf "${NC}${normal}\n
@@ -1423,15 +1572,17 @@ shutdown1(){
   echo "                     (Any unsaved progress will be lost)"
   echo ""
   printf "                                Are you sure?\n"
-  echo "                                     (Y/N) "
   echo ""
   echo ""
   echo ""
-  read -p "> " in
+  options=("Yes" "No")
 
-  if [ $in = "y" ] || [ $in = "Y" ]; then
+  select_option "${options[@]}"
+  inq=$?
+
+  if [ $inq = "0" ]; then
     sudo shutdown now
-  elif [ $in = "n" ] || [ $in = "N" ]; then
+  elif [ $inq = "1" ]; then
     options
   fi
  done
@@ -1443,12 +1594,12 @@ imessage(){
   printf "$color"
   echo "                                                                      $version"
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   printf "${NC}${normal}"
   echo ""
   echo "                 Deleting iMessage related files and folders"
@@ -1465,10 +1616,13 @@ imessage(){
   echo "                             Done. Please Reboot"
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " ii
-    if [ $ii = "q" ]; then
+  options=("Back")
+
+  select_option "${options[@]}"
+  iia=$?
+
+    if [ $iia = "0" ]; then
       options
     fi
   done
@@ -1480,30 +1634,33 @@ stress(){
   printf "$color"
   echo "                                                                      $version"
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   printf "${NC}${normal}"
   echo ""
   echo "                              CPU Stress Test"
   echo "                              ---------------"
   echo ""
-  printf "${RED}${bold}WARNING: ${NC}${normal}If you want to stop CPU Stress Test, You have to type in q\n"
-  echo ""
-  echo ""
   echo "                          CPU Stress Test Started"
   echo ""
   echo "Use Intel Power Gadget to see if you are throttling, temps, package watts, utilization, etc"
   echo ""
+  echo ""
+  echo ""
+  echo ""
   yes > /dev/null & yes > /dev/null & yes > /dev/null & yes > /dev/null &
   echo ""
-  echo "press q to stop test and go back"
   echo ""
-  read -p "> " ii
-    if [ $ii = "q" ]; then
+  options=("Stop Test")
+
+  select_option "${options[@]}"
+  ins=$?
+
+    if [ $iis = "0" ]; then
       killall yes
       options
     fi

@@ -1,5 +1,7 @@
 #
-# Sets pemissions for the Hakku3 Tool
+# Hakku3: A reworked command line utility which shows the user
+#        their system info and a bunch of useful tools and tweaks.
+#              Built using Bash version 3.2.57(1)-release
 #
 # The MIT License (MIT)
 #
@@ -34,27 +36,17 @@ LYELLOW='\033[1;33m'
 bold=$(tput bold)
 normal=$(tput sgr0)
 
-if [[ $EUID -ne 0 ]]; then
-  printf "${RED}${bold}[ERROR] ${NC}${normal}This script must be run as root!\n"
-  exit 1
-elif [[ $EUID -ne 1 ]]; then
-  echo ""
-fi
+version="    v3.0.0"
+build="build-20210326"
+updating="Please check for updates."
+color="${YELLOW}${bold}"
 
-printf "${GREEN}${bold}[INFO] ${NC}${normal}Setting Permissions...\n"
-echo '#            (10%)\r\c'
-echo '##           (20%)\r\c'
-sudo chmod +x ./Hakku3.sh
-echo '###          (30%)\r\c'
-sudo chmod +x ./load.sh
-echo '####         (40%)\r\c'
-sudo chmod +x ./settings_f.sh
-echo '#####        (50%)\r\c'
-sudo chmod +x ./update_f.sh
-echo '########     (80%)\r\c'
-sudo chmod +x ./tweaks_f.sh
-echo '#########    (90%)\r\c'
-sudo chmod +x ./functions.sh
-echo '##########   (100%)\r\c'
-echo '\n'
-printf "${GREEN}${bold}[INFO] ${NC}${normal}Finished setting permissions!\n"
+start=loading
+. ./load.sh
+. ./functions.sh
+. ./tweaks_f.sh
+. ./settings_f.sh
+. ./update_f.sh
+
+$start
+mainmenu

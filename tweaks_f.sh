@@ -1,6 +1,5 @@
-#!/bin/bash
 #
-# Hakku2 Tweaks Functions: A totally reworked command line utility which shows
+# Hakku3 Tweaks Functions: A totally reworked command line utility which shows
 #                           the user their system info and a bunch of useful
 #                                          tools and tweaks.
 #                              Built using Bash version 3.2.57(1)-release
@@ -39,27 +38,30 @@ risk(){
   echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
   echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
   echo ""
-  echo "                                Ryan Wong 2019"
+  echo "                                Ryan Wong 2021"
   echo ""
   printf "${RED}${bold}                 --------------------------------------------\n"
   printf "${RED}${bold}                                 WARNING:\n"
-  printf "${RED}${normal}                I am not responsible for any damage that\n"
-  printf "${RED}${normal}                   may be caused by using these tweaks\n"
+  printf "${RED}${normal}                    I am not responsible for any damage that\n"
+  printf "${RED}${normal}                      may be caused by using these tweaks\n"
   printf "${RED}${bold}                 --------------------------------------------\n"
-  printf "${NC}${normal}                           1) I agree    2) Exit\n"
+  printf "${NC}${normal}\n"
   say "$vo"
   echo ""
   echo ""
   echo ""
   echo ""
   echo ""
-  echo ""
-  echo ""
-  read -p "> " w
-    if [ $w = 1 ]; then
+
+  options=("I Agree" "Exit")
+
+  select_option "${options[@]}"
+  t1=$?
+
+    if [ $t1 = "0" ]; then
       tweaks
-    elif [ $w = 2 ]; then
-      mainmenu
+    elif [ $t1 = "1" ]; then
+      menus
     fi
   done
 }
@@ -76,42 +78,39 @@ tweaks(){
   echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
   echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
   echo ""
-  printf "${NC}${normal}"
+  printf "${RED}${bold}              If you don't know what an option does, don't press it\n"
+  printf "${NC}${normal}\n"
   echo ""
-  echo "                          1) Chime When Charging"
-  echo "                     2) Auto Restart on System Freeze"
-  echo "                  3) Force Enable Trim (On non-Apple SSDs)"
-  echo "                           4) Rebuild KextCache"
-  echo "                           5) Show Hidden Files"
-  echo "                            6) Clear DNS Cache"
-  echo "                          7) Purge Memory Cache"
-  echo "                       8) Enable / Disable Root User"
-  echo "                   9) Erase Spotlight Index and Rebuild"
   echo ""
-  printf "${RED}${bold}           If you don't know what an option does, don't press it\n"
   echo ""
-  printf "${NC}${normal}press q to go back\n"
+
   echo ""
-  read -p "> " www
-  if [ $www = "q" ]; then
-    mainmenu
-  elif [ $www = 1 ]; then
+  options=("Chime When Charging" "Auto Restart on System Freeze" "Rebuild KextCache"
+  "Show Hidden Files" "Clear DNS Cache" "Purge Memory Cache" "Enable / Disable Root User"
+  "Erase Spotlight Index and Rebuild" "Back")
+
+  select_option "${options[@]}"
+  www=$?
+
+  if [ $www = "8" ]; then
+    menus
+  elif [ $www = "0" ]; then
     chime
-  elif [ $www = 2 ]; then
+  elif [ $www = "1" ]; then
     rsf
-  elif [ $www = 3 ]; then
+  elif [ $www = "2" ]; then
     trim
-  elif [ $www = 4 ]; then
+  elif [ $www = "3" ]; then
     kextcache
-  elif [ $www = 5 ]; then
+  elif [ $www = "4" ]; then
     hiddenfiles
-  elif [ $www = 6 ]; then
+  elif [ $www = "5" ]; then
     dnscache
-  elif [ $www = 7 ]; then
+  elif [ $www = "6" ]; then
     memcache
-  elif [ $www = 8 ]; then
+  elif [ $www = "7" ]; then
     rootusr
-  elif [ $www = 9 ]; then
+  elif [ $www = "8" ]; then
     spotlight
   fi
   done
@@ -138,20 +137,22 @@ chime(){
   echo ""
   echo ""
   echo ""
-  echo "                                 1. Enable"
-  echo "                                 2. Disable"
   echo ""
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www1
-  if [ $www1 = 1 ]; then
+
+  options=("Enable" "Disable" "Back")
+
+  select_option "${options[@]}"
+  www1=$?
+
+  if [ $www1 = "0" ]; then
     chime1
-  elif [ $www1 = 2 ]; then
+  elif [ $www1 = "1" ]; then
     chime2
-  elif [ $www1 = "q" ]; then
+  elif [ $www1 = "2" ]; then
     tweaks
   fi
   done
@@ -185,10 +186,14 @@ chime1(){
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www1a
-  if [ $www1a = "q" ]; then
+
+  options=("Back")
+
+  select_option "${options[@]}"
+  www1a=$?
+
+  if [ $www1a = "0" ]; then
     chime
   fi
   done
@@ -222,10 +227,14 @@ chime2(){
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www1b
-  if [ $www1b = "q" ]; then
+
+  options=("Back")
+
+  select_option "${options[@]}"
+  www1b=$?
+
+  if [ $www1b = "0" ]; then
     chime
   fi
   done
@@ -252,20 +261,22 @@ rsf(){
   echo ""
   echo ""
   echo ""
-  echo "                                1. Enable"
-  echo "                                2. Disable"
   echo ""
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www2
-  if [ $www2 = 1 ]; then
+
+  options=("Enable" "Disable" "Back")
+
+  select_option "${options[@]}"
+  www2=$?
+
+  if [ $www2 = "0" ]; then
     rsf1
-  elif [ $www2 = 2 ]; then
+  elif [ $www2 = "1" ]; then
     rsf2
-  elif [ $www2 = "q" ]; then
+  elif [ $www2 = "2" ]; then
     tweaks
   fi
   done
@@ -298,10 +309,14 @@ rsf1(){
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www2a
-  if [ $www2a = "q" ]; then
+
+  options=("Back")
+
+  select_option "${options[@]}"
+  www2a=$?
+
+  if [ $www2a = "0" ]; then
     rsf
   fi
   done
@@ -334,10 +349,14 @@ rsf2(){
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www2b
-  if [ $www2b = "q" ]; then
+
+  options=("Back")
+
+  select_option "${options[@]}"
+  www2b=$?
+
+  if [ $www2b = "0" ]; then
     rsf
   fi
   done
@@ -371,10 +390,14 @@ trim(){
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www3
-  if [ $www3 = "q" ]; then
+
+  options=("Back")
+
+  select_option "${options[@]}"
+  www3=$?
+
+  if [ $www3 = "0" ]; then
     tweaks
   fi
   done
@@ -402,19 +425,21 @@ hiddenfiles(){
   echo "                         ------------------------"
   echo ""
   echo ""
-  echo "                              1. Enable"
-  echo "                              2. Disable"
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www5
-  if [ $www5 = 1 ]; then
+
+  options=("Enable" "Disable" "Back")
+
+  select_option "${options[@]}"
+  www5=$?
+
+  if [ $www5 = "0" ]; then
     hiddenfiles1
-  elif [ $www5 = 2 ]; then
+  elif [ $www5 = "1" ]; then
     hiddenfiles2
-  elif [ $www5 = "q" ]; then
+  elif [ $www5 = "2" ]; then
     tweaks
   fi
   done
@@ -447,9 +472,13 @@ hiddenfiles1(){
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www5a
+
+  options=("Back")
+
+  select_option "${options[@]}"
+  www5a=$?
+
   if [ $www5a = "q" ]; then
     hiddenfiles
   fi
@@ -483,10 +512,14 @@ hiddenfiles2(){
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www5b
-  if [ $www5b = "q" ]; then
+
+  options=("Back")
+
+  select_option "${options[@]}"
+  www5b=$?
+
+  if [ $www5b = "0" ]; then
     hiddenfiles
   fi
   done
@@ -521,10 +554,14 @@ dnscache(){
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www6
-  if [ $www6 = "q" ]; then
+
+  options=("Back")
+
+  select_option "${options[@]}"
+  www6=$?
+
+  if [ $www6 = "0" ]; then
     tweaks
   fi
   done
@@ -558,10 +595,14 @@ memcache(){
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www7
-  if [ $www7 = "q" ]; then
+
+  options=("Back")
+
+  select_option "${options[@]}"
+  www7=$?
+
+  if [ $www7 = "0" ]; then
     tweaks
   fi
   done
@@ -588,20 +629,22 @@ rootusr(){
   echo "                         Enable / Disable Root User"
   echo ""
   echo ""
-  echo "                                1. Enable"
-  echo "                                2. Disable"
   echo ""
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www8
-  if [ $www8 = 1 ]; then
+
+  options=("Enable" "Disable" "Back")
+
+  select_option "${options[@]}"
+  www8=$?
+
+  if [ $www8 = "0" ]; then
     rootusr1
-  elif [ $www8 = 2 ]; then
+  elif [ $www8 = "1" ]; then
     rootusr2
-  elif [ $www8 = "q" ]; then
+  elif [ $www8 = "2" ]; then
     tweaks
   fi
   done
@@ -634,10 +677,14 @@ rootusr1(){
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www8a
-  if [ $www8a = "q" ]; then
+
+  options=("Back")
+
+  select_option "${options[@]}"
+  www8a=$?
+
+  if [ $www8a = "0" ]; then
     rootusr
   fi
   done
@@ -670,10 +717,14 @@ rootusr2(){
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www8b
-  if [ $www8b = "q" ]; then
+
+  options=("Back")
+
+  select_option "${options[@]}"
+  www8b=$?
+
+  if [ $www8b = "0" ]; then
     rootusr
   fi
   done
@@ -707,10 +758,14 @@ spotlight(){
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www9
-  if [ $www9 = "q" ]; then
+
+  options=("Back")
+
+  select_option "${options[@]}"
+  www9=$?
+
+  if [ $www9 = "0" ]; then
     tweaks
   fi
   done
@@ -744,10 +799,13 @@ kextcache(){
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " www10
-  if [ $www10 = "q" ]; then
+  options=("Back")
+
+  select_option "${options[@]}"
+  www10=$?
+
+  if [ $www10 = "0" ]; then
     tweaks
   fi
   done

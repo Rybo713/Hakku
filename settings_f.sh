@@ -1,6 +1,5 @@
-#!/bin/bash
 #
-# Hakku2 Settings Functions: A totally reworked command line utility which shows
+# Hakku3 Settings Functions: A totally reworked command line utility which shows
 #                             the user their system info and a bunch of useful
 #                                            tools and tweaks.
 #                                Built using Bash version 3.2.57(1)-release
@@ -27,18 +26,76 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+function select_option {
+
+    # little helpers for terminal print control and key input
+    ESC=$( printf "\033")
+    cursor_blink_on()  { printf "$ESC[?25h"; }
+    cursor_blink_off() { printf "$ESC[?25l"; }
+    cursor_to()        { printf "$ESC[$1;${2:-1}H"; }
+    print_option()     { printf "   $1 "; }
+    print_selected()   { printf "  $ESC[7m $1 $ESC[27m"; }
+    get_cursor_row()   { IFS=';' read -sdR -p $'\E[6n' ROW COL; echo ${ROW#*[}; }
+    key_input()        { read -s -n3 key 2>/dev/null >&2
+                         if [[ $key = $ESC[A ]]; then echo up;    fi
+                         if [[ $key = $ESC[B ]]; then echo down;  fi
+                         if [[ $key = ""     ]]; then echo enter; fi; }
+
+    # initially print empty new lines (scroll down if at bottom of screen)
+    for opt; do printf "\n"; done
+
+    # determine current screen position for overwriting the options
+    local lastrow=`get_cursor_row`
+    local startrow=$(($lastrow - $#))
+
+    # ensure cursor and input echoing back on upon a ctrl+c during read -s
+    trap "cursor_blink_on; stty echo; printf '\n'; exit" 2
+    cursor_blink_off
+
+    local selected=0
+    while true; do
+        # print options by overwriting the last lines
+        local idx=0
+        for opt; do
+            cursor_to $(($startrow + $idx))
+            if [ $idx -eq $selected ]; then
+                print_selected "$opt"
+            else
+                print_option "$opt"
+            fi
+            ((idx++))
+        done
+
+        # user key control
+        case `key_input` in
+            enter) break;;
+            up)    ((selected--));
+                   if [ $selected -lt 0 ]; then selected=$(($# - 1)); fi;;
+            down)  ((selected++));
+                   if [ $selected -ge $# ]; then selected=0; fi;;
+        esac
+    done
+
+    # cursor position back to normal
+    cursor_to $lastrow
+    printf "\n"
+    cursor_blink_on
+
+    return $selected
+}
+
 settings(){
   while true; do
   /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
   printf "$color"
   echo "                                                                      $version"
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
   printf "${NC}${normal}"
   echo ""
@@ -46,22 +103,25 @@ settings(){
   echo "                                  --------"
   echo ""
   echo ""
-  echo "                                1) VoiceOver"
-  echo "                           2) Change Color of Logo"
   echo ""
   echo ""
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " op
 
-    if [ $op = 1 ]; then
+  options=("VoiceOver" "Change Color of Logo" "Verbose Mode" "Back")
+
+  select_option "${options[@]}"
+  set1=$?
+
+    if [ $set1 = "0" ]; then
       voiceover
-    elif [ $op = 2 ]; then
+    elif [ $set1 = "1" ]; then
       colorlogo
-    elif [ $op = "q" ]; then
-      mainmenu
+    elif [ $set1 = "2" ]; then
+      verbose
+    elif [ $set1 = "3" ]; then
+      menus
     fi
   done
 }
@@ -72,12 +132,12 @@ voiceover(){
   printf "$color"
   echo "                                                                      $version"
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
   printf "${NC}${normal}"
   echo ""
@@ -91,22 +151,22 @@ voiceover(){
   echo ""
   echo ""
   echo ""
-  echo ""
-  echo "press q to go back"
-  echo ""
-  read -p "> " op1
+  options=("Enable" "Disable" "Back")
 
-  if [ $op1 = 1 ]; then
+  select_option "${options[@]}"
+  set2=$?
+
+  if [ $set2 = "0" ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
     printf "$color"
     echo "                                                                      $version"
     echo ""
-    echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-    echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-    echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-    echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-    echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-    echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+    echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+    echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+    echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+    echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+    echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+    echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
     echo ""
     printf "${NC}${normal}"
     echo ""
@@ -122,24 +182,27 @@ voiceover(){
     echo ""
     echo ""
     echo ""
-    echo "press q to go back"
     echo ""
-    read -p "> " op11
-      if [ $op11 = "q" ]; then
+    options=("Back")
+
+    select_option "${options[@]}"
+    set4=$?
+
+      if [ $set4 = "0" ]; then
         voiceover
       fi
 
-  elif [ $op1 = 2 ]; then
+  elif [ $set2 = "1" ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
     printf "$color"
     echo "                                                                      $version"
     echo ""
-    echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-    echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-    echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-    echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-    echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-    echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+    echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+    echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+    echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+    echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+    echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+    echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
     echo ""
     printf "${NC}${normal}"
     echo ""
@@ -154,13 +217,17 @@ voiceover(){
     echo ""
     echo ""
     echo ""
-    echo "press q to go back"
     echo ""
-    read -p "> " op12
-      if [ $op12 = "q" ]; then
+
+    options=("Back")
+
+    select_option "${options[@]}"
+    set5=$?
+
+      if [ $set5 = "0" ]; then
         voiceover
       fi
-  elif [ $op1 = "q" ]; then
+  elif [ $set2 = "2" ]; then
     settings
   fi
   done
@@ -172,12 +239,12 @@ colorlogo(){
   printf "$color"
   echo "                                                                      $version"
   echo ""
-  echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-  echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-  echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-  echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-  echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-  echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
   printf "${NC}${normal}"
   echo ""
@@ -185,28 +252,26 @@ colorlogo(){
   echo "                             ---------------------"
   echo ""
   echo ""
-  echo "                                1) Original"
-  echo "                                2) Red"
-  echo "                                3) Blue"
-  echo "                                4) Green"
-  echo "                                5) White"
   echo ""
   echo ""
-  echo "press q to go back"
   echo ""
-  read -p "> " op2
 
-  if [ $op2 = 1 ]; then
+  options=("Original" "Red" "Violet" "Green" "White" "Back")
+
+  select_option "${options[@]}"
+  set6=$?
+
+  if [ $set6 = "0" ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
     printf "$color"
     echo "                                                                      $version"
     echo ""
-    echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-    echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-    echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-    echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-    echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-    echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+    echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+    echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+    echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+    echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+    echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+    echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
     echo ""
     printf "${NC}${normal}"
     echo ""
@@ -222,24 +287,27 @@ colorlogo(){
     echo ""
     echo ""
     echo ""
-    echo "press q to go back"
     echo ""
-    read -p "> " op2a
-      if [ $op2a = "q" ]; then
+
+    options=("Back")
+
+    select_option "${options[@]}"
+    set7=$?
+      if [ $set7 = "0" ]; then
         colorlogo
       fi
 
-  elif [ $op2 = 2 ]; then
+  elif [ $set6 = "1" ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
     printf "$color"
     echo "                                                                      $version"
     echo ""
-    echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-    echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-    echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-    echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-    echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-    echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+    echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+    echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+    echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+    echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+    echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+    echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
     echo ""
     printf "${NC}${normal}"
     echo ""
@@ -255,24 +323,27 @@ colorlogo(){
     echo ""
     echo ""
     echo ""
-    echo "press q to go back"
     echo ""
-    read -p "> " op2b
-      if [ $op2b = "q" ]; then
+
+    options=("Back")
+
+    select_option "${options[@]}"
+    set8=$?
+      if [ $set8 = "0" ]; then
         colorlogo
       fi
 
-  elif [ $op2 = 3 ]; then
+  elif [ $set6 = "2" ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
     printf "$color"
     echo "                                                                      $version"
     echo ""
-    echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-    echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-    echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-    echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-    echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-    echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+    echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+    echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+    echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+    echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+    echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+    echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
     echo ""
     printf "${NC}${normal}"
     echo ""
@@ -283,29 +354,32 @@ colorlogo(){
     echo ""
     color="${BLUE}${bold}"
     echo ""
-    echo "                          Changed Logo Color to Blue"
+    echo "                          Changed Logo Color to Violet"
     echo ""
     echo ""
     echo ""
     echo ""
-    echo "press q to go back"
     echo ""
-    read -p "> " op2c
-      if [ $op2c = "q" ]; then
+
+    options=("Back")
+
+    select_option "${options[@]}"
+    set9=$?
+      if [ $set9 = "0" ]; then
         colorlogo
       fi
 
-  elif [ $op2 = 4 ]; then
+  elif [ $set6 = "3" ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
     printf "$color"
     echo "                                                                      $version"
     echo ""
-    echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-    echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-    echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-    echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-    echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-    echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+    echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+    echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+    echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+    echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+    echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+    echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
     echo ""
     printf "${NC}${normal}"
     echo ""
@@ -321,24 +395,27 @@ colorlogo(){
     echo ""
     echo ""
     echo ""
-    echo "press q to go back"
     echo ""
-    read -p "> " op2d
-      if [ $op2d = "q" ]; then
+
+    options=("Back")
+
+    select_option "${options[@]}"
+    set0=$?
+      if [ $set0 = "0" ]; then
         colorlogo
       fi
 
-  elif [ $op2 = 5 ]; then
+  elif [ $set6 = "4" ]; then
     /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
     printf "$color"
     echo "                                                                      $version"
     echo ""
-    echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-    echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-    echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-    echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-    echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-    echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+    echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+    echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+    echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+    echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+    echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+    echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
     echo ""
     printf "${NC}${normal}"
     echo ""
@@ -354,15 +431,121 @@ colorlogo(){
     echo ""
     echo ""
     echo ""
-    echo "press q to go back"
     echo ""
-    read -p "> " op2e
-      if [ $op2e = "q" ]; then
+
+    options=("Back")
+
+    select_option "${options[@]}"
+    set10=$?
+      if [ $set10 = "0" ]; then
         colorlogo
       fi
 
-  elif [ $op2 = "q" ]; then
+  elif [ $set6 = "5" ]; then
     settings
   fi
  done
+}
+
+verbose(){
+  while true; do
+  /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+  printf "$color"
+  echo "                                                                      $version"
+  echo ""
+  echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+  echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+  echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+  echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+  echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+  echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
+  echo ""
+  printf "${NC}${normal}"
+  echo ""
+  echo "                                   Verbose"
+  echo "                                  ---------"
+  echo ""
+  echo ""
+  echo "                                 1) Enable"
+  echo "                                 2) Disable"
+  echo ""
+  echo ""
+  echo ""
+  echo ""
+  options=("Enable" "Disable" "Back")
+  select_option "${options[@]}"
+  set12=$?
+
+  if [ $set12 = "0" ]; then
+    /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+    printf "$color"
+    echo "                                                                      $version"
+    echo ""
+    echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+    echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+    echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+    echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+    echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+    echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
+    echo ""
+    printf "${NC}${normal}"
+    echo ""
+    echo "                                   Verbose"
+    echo "                                  ---------"
+    echo ""
+    start=refresh
+    echo "                             Enabled Verbose Mode"
+    echo ""
+    echo ""
+    echo ""
+    echo ""
+    echo ""
+    echo ""
+    options=("Back")
+    select_option "${options[@]}"
+    set121=$?
+
+    if [ $set121 = "0" ]; then
+      verbose
+    fi
+
+  elif [ $set12 = "1" ]; then
+    /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
+    printf "$color"
+    echo "                                                                      $version"
+    echo ""
+    echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+    echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+    echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+    echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+    echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+    echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
+    echo ""
+    printf "${NC}${normal}"
+    echo ""
+    echo "                                   Verbose"
+    echo "                                  ---------"
+    echo ""
+    start=loading
+    echo "                             Disabled Verbose Mode"
+    echo ""
+    echo ""
+    echo ""
+    echo ""
+    echo ""
+    echo ""
+    options=("Back")
+    select_option "${options[@]}"
+    set122=$?
+
+    if [ $set122= "0" ]; then
+      verbose
+    fi
+
+  elif [ $set12 = "2" ]; then
+    settings
+  fi
+
+
+  done
 }

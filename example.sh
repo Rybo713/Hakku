@@ -1,10 +1,9 @@
-#!/bin/bash
 #
-# An example page/template in Hakku2
+# An example page/template in Hakku3
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2019 Ryan Wong
+# Copyright (c) 2021 Ryan Wong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -25,30 +24,29 @@
 # SOFTWARE.
 
 /usr/bin/osascript -e 'tell application "System Events" to tell process "Terminal" to keystroke "k" using command down'
-printf "${YELLOW}${bold}"
-echo "                                                                       v$version"
+printf "$color"
+echo "$build                                                        $version"
 echo ""
-echo "                  ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗";
-echo "                  ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║";
-echo "                  ███████║███████║█████╔╝ █████╔╝ ██║   ██║";
-echo "                  ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║";
-echo "                  ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝";
-echo "                  ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ";
+echo ""
+echo ""
+echo ""
+echo ""
+echo ""
+echo "               ██╗  ██╗ █████╗ ██╗  ██╗██╗  ██╗██╗   ██╗██████╗ ";
+echo "               ██║  ██║██╔══██╗██║ ██╔╝██║ ██╔╝██║   ██║╚════██╗";
+echo "               ███████║███████║█████╔╝ █████╔╝ ██║   ██║ █████╔╝";
+echo "               ██╔══██║██╔══██║██╔═██╗ ██╔═██╗ ██║   ██║ ╚═══██╗";
+echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
+echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
+echo ""
+echo "                                 Ryan Wong 2021"
+echo ""
+echo ""
 echo ""
 echo ""
 printf "${NC}${normal}"
 echo ""
-echo ""
-echo ""
-echo ""
-echo ""
-echo ""
-echo ""
-echo ""
-echo ""
-echo ""
-echo ""
-echo ""
-echo "press q to go back"
-echo ""
-read -p "> " input.
+options=("Start" "Exit" "Help")
+
+select_option "${options[@]}"
+choice=$?
