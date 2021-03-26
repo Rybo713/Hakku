@@ -29,7 +29,7 @@ A command-line utility which shows the user their system info and a bunch of use
   2) Open terminal and type `cd "location of extracted folder"`
   3) In terminal type `sudo chmod +x ./perm.sh`
   4) Then type `sudo ./perm.sh`
-  5) After that type `sudo ./Hakku2.sh`
+  5) After that type `sudo ./Hakku2.sh` or `sudo ./Hakku3.sh`
   6) From now on you can update to new releases using the script
 
 ## Credits
