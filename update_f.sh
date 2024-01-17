@@ -6,7 +6,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2021 Ryan Wong
+# Copyright (c) 2024 Ryan Wong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -187,7 +187,7 @@ check(){
   echo ""
   update="$(curl --silent "https://api.github.com/repos/Rybo713/Hakku/tags" | jq -r '.[0].name')"
   echo ""
-  if [ $update = "v3.0.0" ]; then
+  if [ $update = "v3.1.0" ]; then
     updating="No new updates"
     printf "${GREEN}${bold}                                 No new updates${NC}${normal}\n"
     noti=""

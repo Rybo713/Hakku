@@ -4,7 +4,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2021 Ryan Wong
+# Copyright (c) 2024 Ryan Wong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@ if [[ $EUID -ne 0 ]]; then
   echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
   echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
-  echo "                                 Ryan Wong 2021"
+  echo "                                 Ryan Wong 2024"
   printf "${RED}${bold}"
   echo ""
   echo ""
@@ -70,7 +70,7 @@ elif [[ $EUID -ne 1 ]]; then
   echo "               ██║  ██║██║  ██║██║  ██╗██║  ██╗╚██████╔╝██████╔╝";
   echo "               ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ ╚═════╝ ";
   echo ""
-  echo "                                 Ryan Wong 2021"
+  echo "                                 Ryan Wong 2024"
   echo ""
   printf "${NC}${normal}"
   echo '#                         (1%)\r\c'
@@ -137,8 +137,16 @@ elif [[ $EUID -ne 1 ]]; then
                             name="(Catalina)"
                           elif [ $OS == "11.0" ] || [ $OS == "11.0.1" ] || [ $OS == "11.1" ] || [ $OS == "11.2" ] || [ $OS == "11.2.1" ] || [ $OS == "11.2.2" ] || [ $OS == "11.2.3" ]; then
                             name="(Big Sur)"
-                          elif [ $OS == "11.3" ]; then
-                            name="(Big Sur Beta)"
+                          elif [ $OS == "11.3" ] || [ $OS == "11.7.10" ]; then
+                            name="(Big Sur)"
+                          elif [ $OS == "12.0" ] || [ $OS == "12.7.2" ]; then
+                            name="(Monterey)"
+                          elif [ $OS == "13.0" ] || [ $OS == "13.6.3" ]; then
+                            name="(Ventura)"
+                          elif [ $OS == "14.0" ] || [ $OS == "14.1" ] || [ $OS == "14.1.1" ] || [ $OS == "14.1.2" ] || [ $OS == "14.2" ] || [ $OS == "14.2.1" ]; then
+                            name="(Sonoma)"
+                          elif [ $OS == "14.3" ]; then
+                            name="(Sonoma Beta)"
                           else
                             name="(Unknown)"
                           fi
@@ -245,8 +253,16 @@ elif [[ $EUID -ne 1 ]]; then
                             name="(Catalina)"
                           elif [ $OS == "11.0" ] || [ $OS == "11.0.1" ] || [ $OS == "11.1" ] || [ $OS == "11.2" ] || [ $OS == "11.2.1" ] || [ $OS == "11.2.2" ] || [ $OS == "11.2.3" ]; then
                             name="(Big Sur)"
-                          elif [ $OS == "11.3" ]; then
-                            name="(Big Sur Beta)"
+                          elif [ $OS == "11.3" ] || [ $OS == "11.7.10" ]; then
+                            name="(Big Sur)"
+                          elif [ $OS == "12.0" ] || [ $OS == "12.7.2" ]; then
+                            name="(Monterey)"
+                          elif [ $OS == "13.0" ] || [ $OS == "13.6.3" ]; then
+                            name="(Ventura)"
+                          elif [ $OS == "14.0" ] || [ $OS == "14.1" ] || [ $OS == "14.1.1" ] || [ $OS == "14.1.2" ] || [ $OS == "14.2" ] || [ $OS == "14.2.1" ]; then
+                            name="(Sonoma)"
+                          elif [ $OS == "14.3" ]; then
+                            name="(Sonoma Beta)"
                           else
                             name="(Unknown)"
                           fi

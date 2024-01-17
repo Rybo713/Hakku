@@ -5,7 +5,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2021 Ryan Wong
+# Copyright (c) 2024 Ryan Wong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,8 @@ LYELLOW='\033[1;33m'
 bold=$(tput bold)
 normal=$(tput sgr0)
 
-version="    v3.0.0"
-build="build-20210326"
+version="    v3.1.0"
+build="build-20240117"
 updating="Please check for updates."
 color="${YELLOW}${bold}"
 

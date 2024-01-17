@@ -6,7 +6,7 @@
 #
 # The MIT License (MIT)
 #
-# Copyright (c) 2021 Ryan Wong
+# Copyright (c) 2024 Ryan Wong
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ risk(){
   echo "               ██║   ╚███╔███╔╝███████╗██║  ██║██║  ██╗███████║";
   echo "               ╚═╝    ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝";
   echo ""
-  echo "                                Ryan Wong 2021"
+  echo "                                Ryan Wong 2024"
   echo ""
   printf "${RED}${bold}                 --------------------------------------------\n"
   printf "${RED}${bold}                                 WARNING:\n"
